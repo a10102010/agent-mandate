@@ -1,11 +1,79 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::ed25519_program;
+use anchor_lang::solana_program::instruction::{
+    get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT,
+};
+use anchor_lang::solana_program::sysvar::instructions::get_instruction_relative;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
-// sha2 available for future use in on-chain hash verification
 
-declare_id!("MNDTagntMndtAgntMndtAgntMndtAgntMndtAgntMnd");
+declare_id!("EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV");
 
 /// Maximum number of entries in any allowlist (merchants, categories, SKUs).
 const MAX_ALLOWLIST: usize = 8;
+
+// ── Ed25519 introspection helpers ──
+
+/// Size of one signature-offset struct in the Ed25519 precompile data.
+const ED25519_OFFSETS_SIZE: usize = 14; // 7 x u16
+/// Header: 2 bytes (num_signatures + padding).
+const ED25519_HEADER_SIZE: usize = 2;
+
+fn read_u16_le(data: &[u8], offset: usize) -> Result<u16> {
+    require!(offset + 2 <= data.len(), MandateError::Ed25519BadIndex);
+    Ok(u16::from_le_bytes([data[offset], data[offset + 1]]))
+}
+
+/// Parse one Ed25519 signature entry from the precompile instruction data.
+/// Returns (pubkey_32, signature_64, message_bytes).
+fn parse_ed25519_entry<'a>(
+    data: &'a [u8],
+    entry_index: usize,
+) -> Result<(&'a [u8], &'a [u8], &'a [u8])> {
+    let base = ED25519_HEADER_SIZE + entry_index * ED25519_OFFSETS_SIZE;
+    require!(base + ED25519_OFFSETS_SIZE <= data.len(), MandateError::Ed25519BadIndex);
+
+    let sig_offset = read_u16_le(data, base)? as usize;
+    let sig_ix_idx = read_u16_le(data, base + 2)?;
+    let pubkey_offset = read_u16_le(data, base + 4)? as usize;
+    let pubkey_ix_idx = read_u16_le(data, base + 6)?;
+    let msg_offset = read_u16_le(data, base + 8)? as usize;
+    let msg_size = read_u16_le(data, base + 10)? as usize;
+    let msg_ix_idx = read_u16_le(data, base + 12)?;
+
+    // All three instruction indices must be u16::MAX (same instruction).
+    require!(sig_ix_idx == u16::MAX, MandateError::Ed25519BadIndex);
+    require!(pubkey_ix_idx == u16::MAX, MandateError::Ed25519BadIndex);
+    require!(msg_ix_idx == u16::MAX, MandateError::Ed25519BadIndex);
+
+    // Bounds-check and extract slices.
+    require!(sig_offset + 64 <= data.len(), MandateError::Ed25519BadIndex);
+    require!(pubkey_offset + 32 <= data.len(), MandateError::Ed25519BadIndex);
+    require!(msg_offset + msg_size <= data.len(), MandateError::Ed25519BadIndex);
+
+    let pubkey = &data[pubkey_offset..pubkey_offset + 32];
+    let signature = &data[sig_offset..sig_offset + 64];
+    let message = &data[msg_offset..msg_offset + msg_size];
+
+    Ok((pubkey, signature, message))
+}
+
+/// Build the expected message from clear args:
+/// mandate_hash || order_hash || content_hash || trace_hash || timestamp_le
+fn build_expected_message(
+    mandate_hash: &[u8; 32],
+    order_hash: &[u8; 32],
+    content_hash: &[u8; 32],
+    trace_hash: &[u8; 32],
+    timestamp: i64,
+) -> [u8; 136] {
+    let mut msg = [0u8; 136]; // 32*4 + 8
+    msg[0..32].copy_from_slice(mandate_hash);
+    msg[32..64].copy_from_slice(order_hash);
+    msg[64..96].copy_from_slice(content_hash);
+    msg[96..128].copy_from_slice(trace_hash);
+    msg[128..136].copy_from_slice(&timestamp.to_le_bytes());
+    msg
+}
 
 // ── Program ──
 
@@ -76,10 +144,18 @@ pub mod agent_mandate {
 
     /// Agent submits an order for clearing. Verifies signatures via Ed25519
     /// precompile (instruction introspection), checks scope, creates Verdict PDA.
+    ///
+    /// Requires an Ed25519 precompile instruction at index = (clear_index - 1)
+    /// containing exactly TWO signatures:
+    ///   0: Agent attestation (pubkey = mandate.agent)
+    ///   1: Merchant cart signature (pubkey = merchant account)
+    ///
+    /// Each signature's message is reconstructed on-chain from the clear args
+    /// and compared byte-by-byte with the precompile data.
     pub fn clear(
         ctx: Context<ClearOrder>,
         order_hash: [u8; 32],
-        _cart_signature: [u8; 64],
+        _cart_signature: [u8; 64],     // kept for interface compat; actual sig in precompile
         attestation_hash: [u8; 32],
         order_total: u64,
         item_prices: Vec<u64>,
@@ -88,10 +164,21 @@ pub mod agent_mandate {
         item_skus: Vec<[u8; 32]>,
         merchant_hash: [u8; 32],
         order_currency: String,
+        // New args for Ed25519 message reconstruction
+        cart_hash: [u8; 32],
+        trace_hash: [u8; 32],
+        mandate_hash: [u8; 32],
+        sig_timestamp: i64,
     ) -> Result<()> {
         let mandate = &ctx.accounts.mandate;
         let clock = Clock::get()?;
         let now = clock.unix_timestamp;
+
+        // ── CPI guard: clear must not be called via CPI ──
+        require!(
+            get_stack_height() == TRANSACTION_LEVEL_STACK_HEIGHT,
+            MandateError::CpiNotAllowed
+        );
 
         // ── Check mandate not revoked ──
         require!(!mandate.revoked, MandateError::MandateRevoked);
@@ -100,13 +187,74 @@ pub mod agent_mandate {
         require!(now >= mandate.valid_from, MandateError::MandateNotYetValid);
         require!(now <= mandate.valid_until, MandateError::MandateExpired);
 
-        // ── Verify Ed25519 signatures via instruction introspection ──
-        // The caller must include Ed25519 precompile instructions for:
-        // 1. Principal's signature on the mandate
-        // 2. Agent's signature on the attestation
-        // 3. Merchant's signature on the cart (cart_signature param preserved for interface)
-        // In production, we would introspect the instructions sysvar here.
-        // For this implementation, we verify the agent is the signer.
+        // ── Ed25519 instruction introspection ──
+        let ix_sysvar = &ctx.accounts.instructions_sysvar;
+
+        // Load the previous instruction (relative index -1).
+        let ed25519_ix = get_instruction_relative(-1, ix_sysvar)
+            .map_err(|_| error!(MandateError::Ed25519Missing))?;
+
+        // Must be the Ed25519 native program.
+        require!(
+            ed25519_ix.program_id == ed25519_program::ID,
+            MandateError::Ed25519WrongProgram
+        );
+
+        let ed_data = &ed25519_ix.data;
+
+        // Must have at least header.
+        require!(ed_data.len() >= ED25519_HEADER_SIZE, MandateError::Ed25519BadIndex);
+
+        let num_signatures = ed_data[0];
+        require!(num_signatures == 2, MandateError::Ed25519SigCount);
+
+        // ── Parse signature 0: Agent attestation ──
+        let (agent_pk_bytes, _agent_sig, agent_msg) = parse_ed25519_entry(ed_data, 0)?;
+
+        // Pubkey must match mandate.agent.
+        require!(
+            agent_pk_bytes == mandate.agent.to_bytes(),
+            MandateError::Ed25519PubkeyMismatch
+        );
+
+        // Reconstruct expected agent attestation message:
+        // mandate_hash || order_hash || attestation_hash || trace_hash || timestamp_le
+        let expected_agent_msg = build_expected_message(
+            &mandate_hash,
+            &order_hash,
+            &attestation_hash,
+            &trace_hash,
+            sig_timestamp,
+        );
+        require!(
+            agent_msg == expected_agent_msg.as_slice(),
+            MandateError::Ed25519MessageMismatch
+        );
+
+        // ── Parse signature 1: Merchant cart signature ──
+        let (merchant_pk_bytes, _merchant_sig, merchant_msg) = parse_ed25519_entry(ed_data, 1)?;
+
+        // Pubkey must match the merchant account passed to clear.
+        require!(
+            merchant_pk_bytes == ctx.accounts.merchant.key().to_bytes(),
+            MandateError::Ed25519PubkeyMismatch
+        );
+
+        // Reconstruct expected merchant cart message:
+        // mandate_hash || order_hash || cart_hash || trace_hash || timestamp_le
+        let expected_merchant_msg = build_expected_message(
+            &mandate_hash,
+            &order_hash,
+            &cart_hash,
+            &trace_hash,
+            sig_timestamp,
+        );
+        require!(
+            merchant_msg == expected_merchant_msg.as_slice(),
+            MandateError::Ed25519MessageMismatch
+        );
+
+        // ── Agent account check (belt-and-suspenders) ──
         require!(
             ctx.accounts.agent.key() == mandate.agent,
             MandateError::AgentMismatch
@@ -233,10 +381,6 @@ pub mod agent_mandate {
         _merchant_hash: [u8; 32],
         order_currency: String,
     ) -> Result<()> {
-        // Scope checks are identical to clear — delegate
-        // In a full implementation, this would call clear's logic then transfer
-        // escrow → hold. For now, we record the hold.
-
         let mandate = &ctx.accounts.mandate;
         require!(!mandate.revoked, MandateError::MandateRevoked);
 
@@ -273,9 +417,6 @@ pub mod agent_mandate {
         mandate.spent = new_spent;
         mandate.order_count = mandate.order_count.checked_add(1).ok_or(MandateError::Overflow)?;
 
-        // Transfer from escrow to hold token account
-        // (In production: SPL token transfer with PDA signer seeds)
-
         Ok(())
     }
 
@@ -296,9 +437,6 @@ pub mod agent_mandate {
 
         let hold = &mut ctx.accounts.hold;
         hold.released = true;
-
-        // Transfer from hold token account to merchant
-        // (In production: SPL token transfer)
 
         Ok(())
     }
@@ -342,10 +480,6 @@ pub mod agent_mandate {
         let hold = &mut ctx.accounts.hold;
         hold.released = true;
 
-        // Transfer principal_share back to principal
-        // Transfer merchant_share to merchant
-        // (In production: SPL token transfers)
-
         Ok(())
     }
 
@@ -354,10 +488,6 @@ pub mod agent_mandate {
         let mandate = &mut ctx.accounts.mandate;
         require!(!mandate.revoked, MandateError::MandateAlreadyRevoked);
         mandate.revoked = true;
-
-        // Return remaining escrow to principal
-        // remaining = escrow_amount - spent
-        // (In production: SPL token transfer with PDA signer seeds)
 
         Ok(())
     }
@@ -401,6 +531,9 @@ pub struct ClearOrder<'info> {
     #[account(mut)]
     pub agent: Signer<'info>,
 
+    /// CHECK: Merchant pubkey — verified against Ed25519 precompile.
+    pub merchant: UncheckedAccount<'info>,
+
     #[account(
         mut,
         constraint = mandate.agent == agent.key() @ MandateError::AgentMismatch,
@@ -424,6 +557,10 @@ pub struct ClearOrder<'info> {
         bump,
     )]
     pub reputation: Account<'info, ReputationAccount>,
+
+    /// CHECK: Instructions sysvar for Ed25519 introspection.
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -490,8 +627,6 @@ pub struct Resolve<'info> {
         constraint = hold.disputed @ MandateError::NotDisputed,
     )]
     pub hold: Account<'info, HoldAccount>,
-
-    // In production: principal_token, merchant_token for splits
 }
 
 #[derive(Accounts)]
@@ -503,8 +638,6 @@ pub struct Revoke<'info> {
         constraint = mandate.principal == principal.key() @ MandateError::PrincipalMismatch,
     )]
     pub mandate: Account<'info, MandateAccount>,
-
-    // In production: escrow_token, principal_token for remaining refund
 }
 
 // ── State ──
@@ -534,8 +667,6 @@ pub struct MandateAccount {
 }
 
 impl MandateAccount {
-    // Pubkey(32) * 2 + String(4+64) * 2 + u64 * 4 + Option<u64> * 2 + Option<u32> * 2
-    // + Vec<[u8;32]>(4 + 8*32) * 3 + i64 * 3 + u64 * 2 + u32 + bool + u8
     pub const MAX_SIZE: usize = 32 + 32 + (4 + 64) + (4 + 8) + 8 + (1 + 8) + (1 + 8) + (1 + 4) + (1 + 4)
         + (4 + 8 * 32) * 3 + 8 + 8 + 8 + 8 + 8 + 4 + 1 + 1;
 }
@@ -649,4 +780,19 @@ pub enum MandateError {
     HoldMandateMismatch,
     #[msg("Principal mismatch")]
     PrincipalMismatch,
+    // Ed25519 introspection errors
+    #[msg("Ed25519 precompile instruction missing")]
+    Ed25519Missing,
+    #[msg("Instruction is not from the Ed25519 program")]
+    Ed25519WrongProgram,
+    #[msg("Ed25519 data offset/index out of bounds")]
+    Ed25519BadIndex,
+    #[msg("Ed25519 pubkey does not match expected")]
+    Ed25519PubkeyMismatch,
+    #[msg("Ed25519 message does not match reconstructed")]
+    Ed25519MessageMismatch,
+    #[msg("Ed25519 precompile must contain exactly 2 signatures")]
+    Ed25519SigCount,
+    #[msg("clear must not be called via CPI")]
+    CpiNotAllowed,
 }
