@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-mandate.dev/schema/mandate.schema.json",
+  "title": "Agent Mandate",
+  "description": "A signed, machine-verifiable mandate (power of attorney) for AI agents that purchase on behalf of a principal.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1",
+      "description": "Schema version"
+    },
+    "mandateId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this mandate"
+    },
+    "principal": {
+      "type": "object",
+      "properties": {
+        "scheme": {
+          "enum": ["ed25519", "es256"],
+          "description": "Cryptographic scheme used by the principal"
+        },
+        "pubkey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base58-encoded public key of the principal"
+        }
+      },
+      "required": ["scheme", "pubkey"],
+      "additionalProperties": false
+    },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Agent identifier"
+        },
+        "scheme": {
+          "enum": ["ed25519", "es256"],
+          "description": "Cryptographic scheme used by the agent"
+        },
+        "pubkey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base58-encoded public key of the agent"
+        }
+      },
+      "required": ["id", "scheme", "pubkey"],
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code"
+        },
+        "maxTotal": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum total budget in minor units (cents)"
+        },
+        "maxPerOrder": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum amount per order in minor units"
+        },
+        "maxPerItem": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum price per item in minor units"
+        },
+        "maxQuantity": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum quantity per item"
+        },
+        "maxOrders": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of orders"
+        },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowlist of permitted categories (empty = all allowed)"
+        },
+        "merchants": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowlist of permitted merchants (empty = all allowed)"
+        },
+        "skus": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowlist of permitted SKUs"
+        }
+      },
+      "required": ["currency", "maxTotal"],
+      "additionalProperties": false
+    },
+    "validFrom": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Start of validity window (unix seconds)"
+    },
+    "validUntil": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "End of validity window (unix seconds)"
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Random nonce for uniqueness"
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "liabilityModel": {
+          "const": "mandate-scope-v1",
+          "description": "Liability model identifier"
+        },
+        "disputeWindowSec": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Dispute window in seconds"
+        }
+      },
+      "required": ["liabilityModel", "disputeWindowSec"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "mandateId",
+    "principal",
+    "agent",
+    "constraints",
+    "validFrom",
+    "validUntil",
+    "nonce",
+    "policy"
+  ],
+  "additionalProperties": false
+}

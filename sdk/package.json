@@ -1,0 +1,26 @@
+{
+  "name": "agent-mandate-sdk",
+  "version": "0.1.0",
+  "description": "SDK for agent mandate: signed, machine-verifiable power of attorney for AI agent purchases",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --import tsx --test src/*.test.ts",
+    "demo": "node --import tsx src/demo.ts"
+  },
+  "dependencies": {
+    "tweetnacl": "^1.0.3",
+    "bs58": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.14.0"
+  }
+}

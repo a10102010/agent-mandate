@@ -1,0 +1,48 @@
+export { canonicalize, sha256, sha256Hex, hashCanonical, hashCanonicalHex } from './canonical.js';
+export {
+  type Scheme,
+  type KeyPair,
+  generateEd25519KeyPair,
+  generateEs256KeyPair,
+  signEd25519,
+  verifyEd25519,
+  signEs256,
+  verifyEs256,
+  sign,
+  verify,
+  pubkeyFromBase58,
+  pubkeyToBase58,
+  signatureToBase58,
+  signatureFromBase58,
+} from './crypto.js';
+export {
+  issueMandate,
+  attestOrder,
+  signCart,
+  verifyMandateSignature,
+  verifyCartSignature,
+  verifyAttestationSignature,
+  type IssueMandateInput,
+  type AttestOrderInput,
+} from './mandate.js';
+export { verifyOrder, type VerifyOrderInput } from './verifier.js';
+export { type NonceRegistry, InMemoryNonceRegistry } from './nonce.js';
+export type {
+  Principal,
+  Agent,
+  Constraints,
+  Policy,
+  Mandate,
+  SignedMandate,
+  OrderItem,
+  Order,
+  SignedOrder,
+  Attestation,
+  SignedAttestation,
+  Decision,
+  Liability,
+  ViolationCode,
+  Violation,
+  VerifierState,
+  VerifyResult,
+} from './types.js';
