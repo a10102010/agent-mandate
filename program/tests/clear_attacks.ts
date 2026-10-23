@@ -25,11 +25,15 @@ function sha256Bytes(input: Buffer): number[] {
   return Array.from(hash);
 }
 
+// Domain separation prefixes (must match on-chain constants)
+const ATTESTATION_PREFIX = Buffer.from("mandate-clearing/attestation/v1");
+const CART_PREFIX = Buffer.from("mandate-clearing/cart/v1");
+
 /**
- * Build the 136-byte message that the on-chain program reconstructs:
+ * Build the raw 136-byte payload (without prefix):
  * mandate_hash (32) || order_hash (32) || content_hash (32) || trace_hash (32) || timestamp_le (8)
  */
-function buildMessage(
+function buildRawPayload(
   mandateHash: number[],
   orderHash: number[],
   contentHash: number[],
@@ -43,6 +47,25 @@ function buildMessage(
   Buffer.from(traceHash).copy(buf, 96);
   buf.writeBigInt64LE(BigInt(timestamp), 128);
   return buf;
+}
+
+/**
+ * Build the domain-prefixed message:
+ * prefix || mandate_hash || order_hash || content_hash || trace_hash || timestamp_le
+ */
+function buildMessage(
+  mandateHash: number[],
+  orderHash: number[],
+  contentHash: number[],
+  traceHash: number[],
+  timestamp: number,
+  prefix?: Buffer,
+): Buffer {
+  const payload = buildRawPayload(mandateHash, orderHash, contentHash, traceHash, timestamp);
+  if (prefix) {
+    return Buffer.concat([prefix, payload]);
+  }
+  return payload;
 }
 
 /**
@@ -289,7 +312,6 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     return await program.methods
       .clear(
         orderHash,
-        cartSignature,
         attestationHash,
         orderTotal,
         itemPrices,
@@ -417,8 +439,8 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     const orderHash = orderHashFor("attack-wrong-position");
     const attestationHash = sha256("att-wrong-pos");
 
-    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp);
-    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp);
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp, CART_PREFIX);
     const ed25519Ix = buildDualEd25519Ix(correctAgent, agentMsg, merchant, merchantMsg);
 
     const clearIx = await buildClearIx(orderHash, correctAgent, attestationHash);
@@ -461,8 +483,8 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     const orderHash = orderHashFor("attack-wrong-pubkey");
     const attestationHash = sha256("att-wrong-pk");
 
-    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp);
-    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp);
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp, CART_PREFIX);
 
     // Use wrongAgent for signature 0 instead of correctAgent
     const ed25519Ix = buildDualEd25519Ix(wrongAgent, agentMsg, merchant, merchantMsg);
@@ -507,8 +529,8 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
 
     // Build message with WRONG content hash (agent signs different data)
     const wrongContentHash = sha256("wrong-attestation-content");
-    const agentMsg = buildMessage(mandateHashArr, orderHash, wrongContentHash, traceHash, sigTimestamp);
-    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp);
+    const agentMsg = buildMessage(mandateHashArr, orderHash, wrongContentHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp, CART_PREFIX);
     const ed25519Ix = buildDualEd25519Ix(correctAgent, agentMsg, merchant, merchantMsg);
 
     const clearIx = await buildClearIx(orderHash, correctAgent, attestationHash);
@@ -547,8 +569,8 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     const orderHash = orderHashFor("attack-bad-ix-index");
     const attestationHash = sha256("att-bad-idx");
 
-    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp);
-    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp);
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp, CART_PREFIX);
     const ed25519Ix = buildDualEd25519IxBadIndex(correctAgent, agentMsg, merchant, merchantMsg);
 
     const clearIx = await buildClearIx(orderHash, correctAgent, attestationHash);
@@ -591,7 +613,7 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     const orderHash = orderHashFor("attack-one-sig");
     const attestationHash = sha256("att-one-sig");
 
-    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp);
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
     const ed25519Ix = buildSingleEd25519Ix(correctAgent, agentMsg);
 
     const clearIx = await buildClearIx(orderHash, correctAgent, attestationHash);
@@ -651,9 +673,9 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     const orderHash = orderHashFor("sanity-dual-ed25519");
     const attestationHash = sha256("att-sanity");
 
-    // Build correct messages
-    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp);
-    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp);
+    // Build correct messages with domain prefixes
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, cartHash, traceHash, sigTimestamp, CART_PREFIX);
 
     // Build the dual Ed25519 precompile instruction
     const ed25519Ix = buildDualEd25519Ix(correctAgent, agentMsg, merchant, merchantMsg);

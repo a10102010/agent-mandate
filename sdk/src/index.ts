@@ -14,6 +14,9 @@ export {
   pubkeyToBase58,
   signatureToBase58,
   signatureFromBase58,
+  ATTESTATION_PREFIX,
+  CART_PREFIX,
+  prefixMessage,
 } from './crypto.js';
 export {
   issueMandate,

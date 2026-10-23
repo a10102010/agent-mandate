@@ -57,21 +57,27 @@ fn parse_ed25519_entry<'a>(
     Ok((pubkey, signature, message))
 }
 
-/// Build the expected message from clear args:
-/// mandate_hash || order_hash || content_hash || trace_hash || timestamp_le
-fn build_expected_message(
+/// Domain separation prefixes for signed messages.
+const ATTESTATION_PREFIX: &[u8] = b"mandate-clearing/attestation/v1";
+const CART_PREFIX: &[u8] = b"mandate-clearing/cart/v1";
+
+/// Build the expected message from clear args WITH a domain prefix:
+/// prefix || mandate_hash || order_hash || content_hash || trace_hash || timestamp_le
+fn build_expected_message_with_prefix(
+    prefix: &[u8],
     mandate_hash: &[u8; 32],
     order_hash: &[u8; 32],
     content_hash: &[u8; 32],
     trace_hash: &[u8; 32],
     timestamp: i64,
-) -> [u8; 136] {
-    let mut msg = [0u8; 136]; // 32*4 + 8
-    msg[0..32].copy_from_slice(mandate_hash);
-    msg[32..64].copy_from_slice(order_hash);
-    msg[64..96].copy_from_slice(content_hash);
-    msg[96..128].copy_from_slice(trace_hash);
-    msg[128..136].copy_from_slice(&timestamp.to_le_bytes());
+) -> Vec<u8> {
+    let mut msg = Vec::with_capacity(prefix.len() + 136);
+    msg.extend_from_slice(prefix);
+    msg.extend_from_slice(mandate_hash);
+    msg.extend_from_slice(order_hash);
+    msg.extend_from_slice(content_hash);
+    msg.extend_from_slice(trace_hash);
+    msg.extend_from_slice(&timestamp.to_le_bytes());
     msg
 }
 
@@ -155,7 +161,6 @@ pub mod agent_mandate {
     pub fn clear(
         ctx: Context<ClearOrder>,
         order_hash: [u8; 32],
-        _cart_signature: [u8; 64],     // kept for interface compat; actual sig in precompile
         attestation_hash: [u8; 32],
         order_total: u64,
         item_prices: Vec<u64>,
@@ -217,9 +222,10 @@ pub mod agent_mandate {
             MandateError::Ed25519PubkeyMismatch
         );
 
-        // Reconstruct expected agent attestation message:
-        // mandate_hash || order_hash || attestation_hash || trace_hash || timestamp_le
-        let expected_agent_msg = build_expected_message(
+        // Reconstruct expected agent attestation message with domain prefix:
+        // "mandate-clearing/attestation/v1" || mandate_hash || order_hash || attestation_hash || trace_hash || timestamp_le
+        let expected_agent_msg = build_expected_message_with_prefix(
+            ATTESTATION_PREFIX,
             &mandate_hash,
             &order_hash,
             &attestation_hash,
@@ -240,9 +246,10 @@ pub mod agent_mandate {
             MandateError::Ed25519PubkeyMismatch
         );
 
-        // Reconstruct expected merchant cart message:
-        // mandate_hash || order_hash || cart_hash || trace_hash || timestamp_le
-        let expected_merchant_msg = build_expected_message(
+        // Reconstruct expected merchant cart message with domain prefix:
+        // "mandate-clearing/cart/v1" || mandate_hash || order_hash || cart_hash || trace_hash || timestamp_le
+        let expected_merchant_msg = build_expected_message_with_prefix(
+            CART_PREFIX,
             &mandate_hash,
             &order_hash,
             &cart_hash,

@@ -11,6 +11,9 @@ import {
   pubkeyToBase58,
   signatureToBase58,
   signatureFromBase58,
+  ATTESTATION_PREFIX,
+  CART_PREFIX,
+  prefixMessage,
 } from './crypto.js';
 
 describe('ed25519', () => {
@@ -68,6 +71,49 @@ describe('es256', () => {
     const sig = await signEs256(message, kp.secretKey);
     const tampered = new TextEncoder().encode('tampered message');
     assert.ok(!(await verifyEs256(tampered, sig, kp.publicKey)));
+  });
+});
+
+describe('domain separation prefixes', () => {
+  it('ATTESTATION_PREFIX matches on-chain constant', () => {
+    assert.deepEqual(
+      ATTESTATION_PREFIX,
+      new TextEncoder().encode('mandate-clearing/attestation/v1')
+    );
+  });
+
+  it('CART_PREFIX matches on-chain constant', () => {
+    assert.deepEqual(
+      CART_PREFIX,
+      new TextEncoder().encode('mandate-clearing/cart/v1')
+    );
+  });
+
+  it('prefixMessage prepends prefix correctly', () => {
+    const msg = new Uint8Array([1, 2, 3]);
+    const prefixed = prefixMessage(ATTESTATION_PREFIX, msg);
+    assert.equal(prefixed.length, ATTESTATION_PREFIX.length + 3);
+    assert.deepEqual(prefixed.slice(0, ATTESTATION_PREFIX.length), ATTESTATION_PREFIX);
+    assert.deepEqual(prefixed.slice(ATTESTATION_PREFIX.length), msg);
+  });
+
+  it('different prefixes produce different signed messages', () => {
+    const kp = generateEd25519KeyPair();
+    const payload = new TextEncoder().encode('same-payload');
+
+    const attMsg = prefixMessage(ATTESTATION_PREFIX, payload);
+    const cartMsg = prefixMessage(CART_PREFIX, payload);
+
+    const sigAtt = signEd25519(attMsg, kp.secretKey);
+    const sigCart = signEd25519(cartMsg, kp.secretKey);
+
+    // Attestation sig does NOT verify against cart-prefixed message
+    assert.ok(!verifyEd25519(cartMsg, sigAtt, kp.publicKey));
+    // Cart sig does NOT verify against attestation-prefixed message
+    assert.ok(!verifyEd25519(attMsg, sigCart, kp.publicKey));
+    // Each verifies against its own prefix
+    assert.ok(verifyEd25519(attMsg, sigAtt, kp.publicKey));
+    assert.ok(verifyEd25519(cartMsg, sigCart, kp.publicKey));
   });
 });
 

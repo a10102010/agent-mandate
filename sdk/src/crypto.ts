@@ -109,6 +109,24 @@ export function verify(scheme: Scheme, message: Uint8Array, signature: Uint8Arra
   return verifyEs256(message, signature, publicKey);
 }
 
+// ── Domain separation prefixes ──
+
+/** Domain prefix for agent attestation messages (on-chain signing) */
+export const ATTESTATION_PREFIX = new TextEncoder().encode('mandate-clearing/attestation/v1');
+/** Domain prefix for merchant cart messages (on-chain signing) */
+export const CART_PREFIX = new TextEncoder().encode('mandate-clearing/cart/v1');
+
+/**
+ * Prepend a domain prefix to a message buffer.
+ * Used to create domain-separated messages for on-chain Ed25519 verification.
+ */
+export function prefixMessage(prefix: Uint8Array, message: Uint8Array): Uint8Array {
+  const result = new Uint8Array(prefix.length + message.length);
+  result.set(prefix, 0);
+  result.set(message, prefix.length);
+  return result;
+}
+
 // ── Encoding helpers ──
 
 export function pubkeyFromBase58(b58: string): Uint8Array {
