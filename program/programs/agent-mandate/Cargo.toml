@@ -1,0 +1,23 @@
+[package]
+name = "agent-mandate"
+version = "0.1.0"
+description = "Signed mandate for AI agent purchases — on-chain verifier with escrow"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "agent_mandate"
+
+[features]
+default = ["init-if-needed"]
+init-if-needed = ["anchor-lang/init-if-needed"]
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+sha2 = "0.10"
