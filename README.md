@@ -213,3 +213,49 @@ Both adapters are pure translation — `verifyOrder` is never modified. See [doc
 ## License
 
 MIT — NORTH7 Paradox Software LTD, Ireland
+
+## MCP Server
+
+The `mandate-clearing-mcp` package is an MCP server that any Claude Desktop or Cursor user can register. It provides four tools:
+
+| Tool | What it does |
+|------|-------------|
+| `request_mandate` | Request a signed mandate (categories, merchants, budget, hours) |
+| `list_mandates` | Show active mandates with remaining budget |
+| `buy_credits` | Buy API credits under mandate (attest, verify, get verdict) |
+| `get_verdict` | Look up a public verdict by ID |
+
+### Claude Desktop setup
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mandate-clearing": {
+      "command": "npx",
+      "args": ["tsx", "/path/to/agent-mandate/apps/mcp/src/index.ts"],
+      "env": {
+        "MANDATE_BASE_URL": "https://www.north7.ai/mandate"
+      }
+    }
+  }
+}
+```
+
+Or install from the repo:
+
+```bash
+git clone https://github.com/a10102010/agent-mandate.git
+cd agent-mandate/apps/mcp && npm install
+```
+
+Then point `command` to `npx` and `args` to `["tsx", "<repo>/apps/mcp/src/index.ts"]`.
+
+### How it works
+
+1. The agent key is generated once and stored in `~/.mandate-clearing/` (never transmitted)
+2. `request_mandate` builds the mandate request and gets it signed by the principal
+3. `buy_credits` builds the order, gets the merchant's cart signature, creates an attestation (with traceHash = SHA-256 of all tool calls), and sends everything to the verifier
+4. The verifier returns APPROVE (with remaining budget) or REJECT (with readable violations)
+5. On REJECT, violations are returned as readable strings — not thrown as errors — so the agent can explain them to the user

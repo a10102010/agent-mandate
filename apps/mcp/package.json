@@ -1,0 +1,25 @@
+{
+  "name": "mandate-clearing-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Mandate Clearing — buy API credits under cryptographic mandate",
+  "type": "module",
+  "bin": {
+    "mandate-clearing-mcp": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "test": "node --import tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "agent-mandate-sdk": "file:../../sdk",
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.14.0"
+  },
+  "files": ["src/", "README.md"],
+  "keywords": ["mcp", "mandate", "clearing", "ai-agent", "commerce", "credits"],
+  "license": "MIT"
+}
