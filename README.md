@@ -1,8 +1,8 @@
-# Agent Mandate
+# Mandate Clearing
 
 A signed, machine-verifiable mandate (power of attorney) for AI agents that purchase on behalf of a user.
 
-The mandate token occupies a single field in any payment rail — Visa TAP, Mastercard Agent Pay, x402, AP2, or a Solana instruction. The verifier is the same everywhere. The on-chain program will eventually become the neutral checkpoint (no operator, no company).
+The mandate token occupies a single field in any payment rail — x402, Google AP2, Mastercard Verifiable Intent, or a Solana instruction. The verifier is the same everywhere. NORTH7 is the first operator, not the owner.
 
 ## Architecture
 
@@ -49,76 +49,152 @@ Instead, the mandate defines machine-verifiable constraints (amounts, merchants,
 ## Project Structure
 
 ```
-schema/             JSON Schema 2020-12 for the mandate format
-sdk/                TypeScript ESM SDK (Node 20+)
+sdk/                    TypeScript ESM SDK (Node 20+)
   src/
-    canonical.ts    Canonical JSON serialization + SHA-256
-    crypto.ts       Ed25519 (tweetnacl) + ES256 (WebCrypto P-256)
-    mandate.ts      issueMandate, attestOrder, signCart, verifications
-    verifier.ts     Pure verifyOrder function
-    nonce.ts        NonceRegistry interface + InMemory implementation
-    types.ts        All TypeScript types
-    index.ts        Public API exports
-    demo.ts         Full lifecycle demo
-    *.test.ts       Tests (node:test)
-program/            Solana Anchor program (Rust)
+    verifier.ts         Pure verifyOrder function (no I/O)
+    canonical.ts        Canonical JSON serialization + SHA-256
+    crypto.ts           Ed25519 (tweetnacl) + ES256 (WebCrypto P-256)
+    mandate.ts          issueMandate, attestOrder, signCart
+    nonce.ts            NonceRegistry interface
+    types.ts            All TypeScript types
+    demo.ts             Full lifecycle demo
+
+services/
+  verifier/             Verifier as a service (wraps pure verifyOrder)
+    src/server.ts       POST /verify, GET /verdicts/:id, GET /agents/:pubkey/reputation
+    src/middleware.ts    Express middleware (X-Mandate + X-Attestation headers)
+    src/pg-store.ts     Postgres: verdicts + ledger (atomic transactions)
+    src/pg-nonce.ts     Postgres-backed NonceRegistry
+    src/schema.sql      Database schema
+
+apps/
+  approve/              Principal approval page
+    src/server.ts       GET /approve?req=<base64>, POST /approve (signs mandate)
+    public/index.html   Approval UI (shows constraints, not the prompt)
+  shop/                 Demo merchant (API credit shop)
+    src/server.ts       GET /catalog, POST /cart (signCart), POST /pay
+  agent/                Reference agent CLI
+    src/cli.ts          agent mandate, agent buy, agent buy --evil
+
 adapters/
-  x402/             x402 payment rail adapter
-  ap2/              Google AP2 (Agent Payments Protocol) adapter
-  verifiable-intent/ Mastercard Verifiable Intent adapter
-docs/
-  interop.md        Field-by-field mapping: Agent Mandate ↔ VI ↔ AP2
+  x402/                 x402 payment rail adapter
+  ap2/                  Google AP2 adapter (SD-JWT ↔ Mandate)
+  verifiable-intent/    Mastercard Verifiable Intent adapter
+
+program/                Solana Anchor program (Rust) — escrow, Ed25519 introspection
+schema/                 JSON Schema 2020-12
+docs/interop.md         Field-by-field mapping: Mandate ↔ VI ↔ AP2
+tests/e2e/              End-to-end integration tests
 ```
 
-## Quick Start
+## Running
+
+### Quick start (no database)
 
 ```bash
-cd sdk
-npm install
-npm test          # 46 tests, all liability cases
-npm run demo      # Full mandate lifecycle
+# Install and build SDK
+cd sdk && npm install && npx tsc
+
+# Run unit tests
+npm test                    # 50 SDK tests
+
+# Run adapter tests
+cd ../adapters/x402 && npm install && npm test      # 7 tests
+cd ../ap2 && npm install && npm test                 # 10 tests
+cd ../verifiable-intent && npm install && npm test   # 12 tests
 ```
+
+### Full flow (all services in-process)
+
+```bash
+# Install all services
+cd apps/approve && npm install
+cd ../shop && npm install
+cd ../../services/verifier && npm install
+cd ../../tests/e2e && npm install
+
+# Run E2E tests (starts all services, runs 4 scenarios)
+cd tests/e2e && npm test
+```
+
+The E2E test runs all services in-process without Docker or Postgres. The verifier falls back to in-memory state when no database is available.
+
+### Production (with Postgres)
+
+```bash
+# Start Postgres
+docker run -d --name mandate-pg -e POSTGRES_USER=mandate -e POSTGRES_PASSWORD=mandate -e POSTGRES_DB=mandate -p 5432:5432 postgres:16
+
+# Initialize schema
+psql postgresql://mandate:mandate@localhost:5432/mandate < services/verifier/src/schema.sql
+
+# Start services
+DATABASE_URL=postgresql://mandate:mandate@localhost:5432/mandate PORT=3200 node --import tsx services/verifier/src/server.ts
+PORT=3100 node --import tsx apps/approve/src/server.ts
+PORT=3300 node --import tsx apps/shop/src/server.ts
+
+# Use agent CLI
+node --import tsx apps/agent/src/cli.ts mandate --merchant north7.ai --categories api-credits --max-total 10000 --hours 24
+node --import tsx apps/agent/src/cli.ts buy --sku credits-1000 --qty 2
+node --import tsx apps/agent/src/cli.ts buy --evil   # must get 402
+```
+
+## Tests
+
+| Module | Tests | What it covers |
+|--------|-------|---------------|
+| SDK (verifier + canonical + crypto) | 50 | All 18 violation codes, liability assignment, canonicalization, Ed25519 + ES256 |
+| x402 adapter | 7 | Payment flow, replay, wrong merchant, state tracking |
+| AP2 adapter | 10 | SD-JWT parsing, constraint mapping, round-trip, ed25519 rejection |
+| VI adapter | 12 | 3-layer chain, cart translation, autonomous/immediate mode, round-trip |
+| Approve service | 3 | Request decode, mandate signing, signature validity |
+| Verifier service | 6 | APPROVE, REJECT (merchant), REJECT (budget), health |
+| Shop service | 6 | Catalog, cart signing, signature validity, unknown SKU |
+| E2E flow | 4 | approve→buy→APPROVE, replay→REJECT, evil→REJECT, budget→EXCEEDED |
+| **Total** | **98** | |
+
+Solana Anchor program has 8 attack tests (CPI guard, replay, scope checks) but requires the Anchor toolchain to run.
 
 ## Verification Order
 
 The verifier checks in strict order, with early return:
 
 1. **Mandate signature** — fail → `REJECT`, liability `NONE`, never debit
-2. **Attestation** — signature, agent match, mandate hash match, order hash match, cart signature, replay — fail → `REJECT`, liability `AGENT_PROVIDER`
+2. **Attestation** — signature, agent match, hash match, cart signature, replay — fail → `REJECT`, liability `AGENT_PROVIDER`
 3. **Time window** — mandate validity — fail → `REJECT`, liability `AGENT_PROVIDER`
-4. **Order integrity** — total matches sum of items, currency matches — fail → `REJECT`, liability `AGENT_PROVIDER`
-5. **Scope** — merchant, category, SKU, quantity, item price, per-order limit, total budget, order count — fail → `REJECT`, liability `AGENT_PROVIDER`
+4. **Order integrity** — total = sum of items, currency match — fail → `REJECT`, liability `AGENT_PROVIDER`
+5. **Scope** — merchant, category, SKU, qty, item price, per-order limit, budget, order count — fail → `REJECT`, liability `AGENT_PROVIDER`
 
-## Violation Codes
+## Status
 
-| Code | Description |
-|---|---|
-| `MANDATE_SIG_INVALID` | Principal's signature on mandate failed verification |
-| `ATTESTATION_SIG_INVALID` | Agent's signature on attestation failed verification |
-| `ATTESTATION_AGENT_MISMATCH` | Agent in attestation differs from mandate |
-| `ATTESTATION_HASH_MISMATCH` | Mandate or order hash in attestation doesn't match |
-| `CART_SIG_INVALID` | Merchant's cart signature failed verification |
-| `ATTESTATION_REPLAYED` | This attestation was already processed |
-| `MANDATE_EXPIRED` | Current time is past validUntil |
-| `MANDATE_NOT_YET_VALID` | Current time is before validFrom |
-| `ORDER_TOTAL_MISMATCH` | Declared total doesn't match sum of items |
-| `CURRENCY_MISMATCH` | Order currency doesn't match mandate |
-| `MERCHANT_NOT_ALLOWED` | Merchant not in mandate allowlist |
-| `CATEGORY_NOT_ALLOWED` | Item category not in mandate allowlist |
-| `SKU_NOT_ALLOWED` | Item SKU not in mandate allowlist |
-| `QTY_EXCEEDED` | Item quantity exceeds mandate limit |
-| `ITEM_PRICE_EXCEEDED` | Item unit price exceeds mandate limit |
-| `ORDER_LIMIT_EXCEEDED` | Order total exceeds per-order limit |
-| `BUDGET_EXCEEDED` | Cumulative spend would exceed total budget |
-| `ORDER_COUNT_EXCEEDED` | Number of orders would exceed limit |
+### What works
+
+- **SDK**: Complete, 50 tests, pure `verifyOrder` function. Ed25519 + ES256.
+- **Verifier service**: Wraps SDK in HTTP server. Postgres persistence for nonces, ledger, verdicts. Atomic transactions prevent race conditions.
+- **Approval page**: Signs mandates with ed25519. Shows constraints to principal. WebAuthn/Passkey support planned (currently ed25519 fallback).
+- **Shop**: Signs carts, serves catalog. Ready to integrate with real north7.ai credit endpoints.
+- **Agent CLI**: Full lifecycle from mandate request to purchase. Evil mode for testing.
+- **E2E flow**: All 4 scenarios pass — approve, replay, evil, budget exceeded.
+- **Adapters**: x402, Google AP2, Mastercard VI. Pure translation, original signatures preserved.
+- **Solana program**: Code complete (escrow, settle, dispute, release, revoke). Not deployed.
+
+### What does NOT work yet
+
+- **Solana Devnet deploy**: Anchor toolchain not installed on server. Program ID `EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV` is localnet only.
+- **WebAuthn/Passkey signing**: Approval page uses ed25519 fallback. Browser Passkey integration not implemented.
+- **Docker Compose**: Not yet created. Services run in-process or standalone.
+- **Redis NonceRegistry**: Interface defined, implementation not written.
+- **Key rotation**: No mechanism for rotating principal, agent, or merchant keys.
+- **Security audit**: No external audit. Crypto uses tweetnacl (Ed25519) and WebCrypto (ES256). Review the code before production use.
+- **Real payment integration**: The shop is a demo. No real money moves.
 
 ## Interop
 
-- **Google AP2**: We parse AP2 Open Mandates (SD-JWT) and map their constraint types (`payment.budget`, `payment.amount_range`, `checkout.allowed_merchants`) to our `Constraints`; we add the liability model and dispute window that AP2 does not have.
-- **Mastercard Verifiable Intent**: We consume VI's 3-layer SD-JWT chain (Issuer → User → Agent) in autonomous mode, extract constraints and agent key binding, and wrap them in our Mandate format; we add `traceHash`, `modelVersion`, and the `mandate-scope-v1` liability assignment that VI does not define.
+- **Google AP2**: We parse AP2 Open Mandates (SD-JWT) and map their constraint types to our `Constraints`; we add the liability model and dispute window that AP2 does not have.
+- **Mastercard Verifiable Intent**: We consume VI's 3-layer SD-JWT chain in autonomous mode, extract constraints and agent key binding; we add `traceHash`, `modelVersion`, and liability assignment that VI does not define.
 
 Both adapters are pure translation — `verifyOrder` is never modified. See [docs/interop.md](docs/interop.md) for the full field-by-field mapping.
 
 ## License
 
-MIT
+MIT — NORTH7 Paradox Software LTD, Ireland
