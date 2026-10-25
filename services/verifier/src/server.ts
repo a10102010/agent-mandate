@@ -86,6 +86,27 @@ app.get('/agents/:pubkey/reputation', async (req, res) => {
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'mandate-verifier' }));
 
+/** GET /stats — public stats */
+app.get("/stats", async (_req, res) => {
+  try {
+    const stats = await store.getStats();
+    res.json({ ...stats, service: "mandate-clearing", uptime: process.uptime() });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+/** GET /verdicts — public list (last 100, no trace content) */
+app.get("/verdicts", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 100);
+    const verdicts = await store.listVerdicts(limit);
+    res.json({ verdicts, count: verdicts.length });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 export { mandateMiddleware, store, app };
 
 const PORT = parseInt(process.env.PORT ?? '3200');
