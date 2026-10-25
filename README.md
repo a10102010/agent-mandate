@@ -178,15 +178,24 @@ The verifier checks in strict order, with early return:
 - **Adapters**: x402, Google AP2, Mastercard VI. Pure translation, original signatures preserved.
 - **Solana program**: Code complete (escrow, settle, dispute, release, revoke). Not deployed.
 
+### What runs publicly
+
+- **Verifier**: `https://www.north7.ai/mandate/verify` (POST) — rate-limited
+- **Stats**: `https://www.north7.ai/mandate/stats` — mandate/verdict counts
+- **Verdicts Explorer**: `https://www.north7.ai/mandate/verdicts` — last 100, read-only
+- **Approve**: `https://www.north7.ai/mandate/approve` — principal signs mandates
+- **Shop**: `https://www.north7.ai/mandate/shop/catalog` — API credit catalog
+- **Health**: `https://www.north7.ai/mandate/health`
+- **Docker Compose**: 4 containers (postgres, verifier, approve, shop), systemd-managed, restarts on boot
+
 ### What does NOT work yet
 
-- **Solana Devnet deploy**: Anchor toolchain not installed on server. Program ID `EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV` is localnet only.
-- **WebAuthn/Passkey signing**: Approval page uses ed25519 fallback. Browser Passkey integration not implemented.
-- **Docker Compose**: Not yet created. Services run in-process or standalone.
+- **Solana Devnet deploy**: Anchor toolchain not installed on server. Program ID is localnet only.
+- **WebAuthn/Passkey signing**: Approval page uses ed25519 fallback. Browser Passkey not implemented.
 - **Redis NonceRegistry**: Interface defined, implementation not written.
-- **Key rotation**: No mechanism for rotating principal, agent, or merchant keys.
-- **Security audit**: No external audit. Crypto uses tweetnacl (Ed25519) and WebCrypto (ES256). Review the code before production use.
-- **Real payment integration**: The shop is a demo. No real money moves.
+- **Key rotation**: No mechanism for rotating keys.
+- **Security audit**: No external audit. Review the code before production use.
+- **MCP Server**: Planned — agent tool for Claude Desktop / other MCP clients.
 
 ## Demo
 
