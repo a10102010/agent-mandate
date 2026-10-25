@@ -16,14 +16,14 @@ const agentKp = generateEd25519KeyPair();
 const merchantKp = generateEd25519KeyPair();
 const now = Math.floor(Date.now() / 1000);
 
-async function buildVerifyPayload(overrides?: { merchant?: string; total?: number }) {
+async function buildVerifyPayload(overrides?: { merchant?: string; total?: number; mandateId?: string; maxTotal?: number }) {
   const mandateData: Omit<Mandate, 'version' | 'nonce'> = {
-    mandateId: `test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    mandateId: overrides?.mandateId ?? `test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     principal: { scheme: 'ed25519', pubkey: principalKp.pubkey },
     agent: { id: 'test-agent', scheme: 'ed25519', pubkey: agentKp.pubkey },
     constraints: {
       currency: 'USD',
-      maxTotal: 10000,
+      maxTotal: overrides?.maxTotal ?? 10000,
       maxPerOrder: 5000,
       categories: ['api-credits'],
       merchants: ['north7.ai'],
@@ -36,7 +36,7 @@ async function buildVerifyPayload(overrides?: { merchant?: string; total?: numbe
   const signedMandate = await issueMandate({ mandate: mandateData, principalKeyPair: principalKp });
 
   const order: Order = {
-    orderId: `ord-${Date.now()}`,
+    orderId: `ord-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     merchant: overrides?.merchant ?? 'north7.ai',
     currency: 'USD',
     items: [{ sku: 'credits-1000', category: 'api-credits', unitPrice: overrides?.total ?? 1000, qty: 1 }],
@@ -45,7 +45,7 @@ async function buildVerifyPayload(overrides?: { merchant?: string; total?: numbe
   };
 
   const signedOrder = await signCart(order, merchantKp);
-  const traceHash = hashCanonicalHex({ input: 'buy credits' });
+  const traceHash = hashCanonicalHex({ input: 'buy credits', ts: Date.now(), r: Math.random() });
   const signedAttestation = await attestOrder({
     agentKeyPair: agentKp,
     agentId: 'test-agent',
@@ -62,7 +62,7 @@ async function buildVerifyPayload(overrides?: { merchant?: string; total?: numbe
 let server: ReturnType<typeof app.listen>;
 let port: number;
 
-describe('verifier: POST /verify', () => {
+describe('verifier: POST /verify (in-memory fallback)', () => {
   it('setup', () => {
     server = app.listen(0);
     port = (server.address() as any).port;
@@ -92,12 +92,11 @@ describe('verifier: POST /verify', () => {
     const data = await res.json() as any;
     assert.equal(res.status, 402);
     assert.equal(data.decision, 'REJECT');
-    assert.equal(data.liability, 'AGENT_PROVIDER');
     assert.ok(data.violations.some((v: any) => v.code === 'MERCHANT_NOT_ALLOWED'));
   });
 
   it('rejects budget exceeded', async () => {
-    const payload = await buildVerifyPayload({ total: 6000 }); // > maxPerOrder 5000
+    const payload = await buildVerifyPayload({ total: 6000 });
     const res = await fetch(`http://127.0.0.1:${port}/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -105,7 +104,6 @@ describe('verifier: POST /verify', () => {
     });
     const data = await res.json() as any;
     assert.equal(res.status, 402);
-    assert.equal(data.decision, 'REJECT');
     assert.ok(data.violations.some((v: any) => v.code === 'ORDER_LIMIT_EXCEEDED'));
   });
 

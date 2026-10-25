@@ -1,5 +1,4 @@
 -- Mandate Clearing: Verifier persistence layer
--- Run once against Postgres to initialize.
 
 CREATE TABLE IF NOT EXISTS nonces (
   attestation_hash TEXT PRIMARY KEY,
@@ -19,6 +18,7 @@ CREATE TABLE IF NOT EXISTS verdicts (
   order_hash        TEXT NOT NULL,
   attestation_hash  TEXT NOT NULL,
   trace_hash        TEXT,
+  agent_pubkey      TEXT,
   decision          TEXT NOT NULL CHECK (decision IN ('APPROVE', 'REJECT')),
   liability         TEXT NOT NULL CHECK (liability IN ('PRINCIPAL', 'AGENT_PROVIDER', 'NONE')),
   violations        JSONB NOT NULL DEFAULT '[]',
@@ -29,3 +29,4 @@ CREATE TABLE IF NOT EXISTS verdicts (
 CREATE INDEX IF NOT EXISTS idx_verdicts_mandate ON verdicts (mandate_hash);
 CREATE INDEX IF NOT EXISTS idx_verdicts_attestation ON verdicts (attestation_hash);
 CREATE INDEX IF NOT EXISTS idx_verdicts_created ON verdicts (created_at);
+CREATE INDEX IF NOT EXISTS idx_verdicts_agent ON verdicts (agent_pubkey);

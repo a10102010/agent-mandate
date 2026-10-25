@@ -1,10 +1,9 @@
 /**
  * Mandate Clearing Verifier Service
  *
- * Wraps the pure verifyOrder in a stateful HTTP server.
- * POST /verify — direct verification endpoint
+ * POST /verify — atomic verify-and-record (lock → verify → write)
  * GET /verdicts/:id — retrieve a verdict
- * GET /agents/:pubkey/reputation — agent reputation
+ * GET /agents/:pubkey/reputation — agent reputation (30d)
  */
 
 import express from 'express';
@@ -17,19 +16,14 @@ import { mandateMiddleware } from './middleware.js';
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
-// Database connection
 const DATABASE_URL = process.env.DATABASE_URL ?? 'postgresql://mandate:mandate@localhost:5432/mandate';
 const pool = new pg.Pool({ connectionString: DATABASE_URL });
 const store = new PgStore(pool);
 
-// In-memory fallback when no Postgres (for unit tests)
+// In-memory fallback for unit tests without Postgres
 const inMemoryStates = new Map<string, VerifierState>();
 const inMemoryNonce = new InMemoryNonceRegistry();
 
-/**
- * POST /verify
- * Direct verification: body contains { signedMandate, signedOrder, signedAttestation }
- */
 app.post('/verify', async (req, res) => {
   try {
     const { signedMandate, signedOrder, signedAttestation } = req.body;
@@ -37,48 +31,40 @@ app.post('/verify', async (req, res) => {
       return res.status(400).json({ error: 'Missing signedMandate, signedOrder, or signedAttestation' });
     }
 
-    const mandateId = signedMandate.mandate.mandateId;
     const now = Math.floor(Date.now() / 1000);
 
-    // Load state
-    let state: VerifierState;
-    let nonce: PreloadedNonceRegistry;
-
+    // Try Postgres (atomic verifyAndRecord)
     try {
-      state = await store.getState(mandateId);
-      const hasNonce = await store.hasNonce(signedAttestation.attestationHash);
-      nonce = new PreloadedNonceRegistry();
-      if (hasNonce) nonce.load([signedAttestation.attestationHash]);
+      const { verdictId, result } = await store.verifyAndRecord(
+        signedMandate, signedOrder, signedAttestation, now,
+      );
+      return res.status(result.decision === 'APPROVE' ? 200 : 402).json({ verdictId, ...result });
     } catch {
-      // Postgres not available — use in-memory
-      state = inMemoryStates.get(mandateId) ?? { spent: 0, orders: 0 };
-      nonce = new PreloadedNonceRegistry();
+      // Fallback: in-memory (for unit tests without Postgres)
+      const mandateId = signedMandate.mandate.mandateId;
+      const state = inMemoryStates.get(mandateId) ?? { spent: 0, orders: 0 };
+      const nonce = new PreloadedNonceRegistry();
       if (inMemoryNonce.has(signedAttestation.attestationHash)) {
         nonce.load([signedAttestation.attestationHash]);
       }
-    }
 
-    const result = verifyOrder({ signedMandate, order: signedOrder, signedAttestation, state, nonceRegistry: nonce, now });
+      const result = verifyOrder({
+        signedMandate, order: signedOrder, signedAttestation,
+        state, nonceRegistry: nonce, now,
+      });
 
-    // Persist
-    try {
-      const verdictId = await store.recordVerdict(mandateId, signedOrder.total, result, signedAttestation.attestation.traceHash);
-      res.status(result.decision === 'APPROVE' ? 200 : 402).json({ verdictId, ...result });
-    } catch {
-      // Fallback: in-memory tracking
       if (result.decision === 'APPROVE') {
         const cur = inMemoryStates.get(mandateId) ?? { spent: 0, orders: 0 };
         inMemoryStates.set(mandateId, { spent: cur.spent + signedOrder.total, orders: cur.orders + 1 });
         inMemoryNonce.add(result.attestationHash);
       }
-      res.status(result.decision === 'APPROVE' ? 200 : 402).json(result);
+      return res.status(result.decision === 'APPROVE' ? 200 : 402).json(result);
     }
   } catch (err) {
     res.status(500).json({ error: 'Verification failed', detail: (err as Error).message });
   }
 });
 
-/** GET /verdicts/:id */
 app.get('/verdicts/:id', async (req, res) => {
   try {
     const verdict = await store.getVerdict(Number(req.params.id));
@@ -89,7 +75,6 @@ app.get('/verdicts/:id', async (req, res) => {
   }
 });
 
-/** GET /agents/:pubkey/reputation */
 app.get('/agents/:pubkey/reputation', async (req, res) => {
   try {
     const rep = await store.getReputation(req.params.pubkey);
@@ -99,15 +84,12 @@ app.get('/agents/:pubkey/reputation', async (req, res) => {
   }
 });
 
-/** Health check */
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'mandate-verifier' }));
 
-/** Export middleware for other services to use */
-export { mandateMiddleware, store };
-export { app };
+export { mandateMiddleware, store, app };
 
 const PORT = parseInt(process.env.PORT ?? '3200');
 
-if (process.argv[1]?.includes('server')) {
+if (process.argv[1] === import.meta.url.replace('file://','')) {
   app.listen(PORT, () => console.log(`[verifier] Mandate verifier on :${PORT}`));
 }

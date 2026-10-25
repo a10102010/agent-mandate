@@ -188,6 +188,12 @@ The verifier checks in strict order, with early return:
 - **Security audit**: No external audit. Crypto uses tweetnacl (Ed25519) and WebCrypto (ES256). Review the code before production use.
 - **Real payment integration**: The shop is a demo. No real money moves.
 
+## Demo
+
+- **Landing page**: [landing.html](landing.html) — interactive explanation with live constraint checking
+- **CLI demo**: `cd sdk && npm run demo` — full lifecycle with real Ed25519 signatures (issue → sign → attest → verify → replay)
+- **Reference flow**: `cd tests/e2e && npm test` — approve → buy → replay → evil → budget exceeded
+
 ## Interop
 
 - **Google AP2**: We parse AP2 Open Mandates (SD-JWT) and map their constraint types to our `Constraints`; we add the liability model and dispute window that AP2 does not have.
