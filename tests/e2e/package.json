@@ -1,0 +1,19 @@
+{
+  "name": "mandate-e2e",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test flow.test.ts"
+  },
+  "dependencies": {
+    "agent-mandate-sdk": "file:../../sdk",
+    "mandate-approve": "file:../../apps/approve",
+    "mandate-verifier": "file:../../services/verifier",
+    "mandate-shop": "file:../../apps/shop"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.14.0"
+  }
+}

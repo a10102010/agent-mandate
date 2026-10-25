@@ -1,0 +1,19 @@
+{
+  "name": "mandate-agent",
+  "version": "0.1.0",
+  "description": "Reference agent CLI for mandate clearing",
+  "type": "module",
+  "bin": { "agent": "./src/cli.ts" },
+  "scripts": {
+    "start": "node --import tsx src/cli.ts",
+    "test": "node --import tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "agent-mandate-sdk": "file:../../sdk"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.14.0"
+  }
+}

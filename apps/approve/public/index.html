@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandate Approval — Agent Mandate</title>
+<style>
+:root { --bg: #0c0e16; --card: #141722; --border: #1e2436; --text: #e8eaf2; --dim: #7e8aaa; --green: #10b981; --red: #ef4444; --blue: #3b82f6; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; }
+h1 { font-size: 20px; margin-bottom: 4px; }
+.sub { color: var(--dim); font-size: 13px; margin-bottom: 24px; }
+.field { margin-bottom: 16px; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 4px; }
+.value { font-size: 16px; font-weight: 500; }
+.value.mono { font-family: monospace; font-size: 13px; word-break: break-all; color: var(--blue); }
+.amount { color: var(--green); font-size: 22px; font-weight: 700; }
+.hash-note { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 12px; margin: 20px 0; font-size: 12px; color: #f87171; }
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+.btn { flex: 1; padding: 14px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.85; }
+.btn-approve { background: var(--green); color: #fff; }
+.btn-reject { background: transparent; border: 1px solid var(--border); color: var(--dim); }
+.result { margin-top: 20px; padding: 16px; border-radius: 10px; font-size: 13px; font-family: monospace; display: none; word-break: break-all; }
+.result.ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); display: block; }
+.result.err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); display: block; color: #f87171; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Mandate Approval</h1>
+  <p class="sub">An agent is requesting permission to spend on your behalf.</p>
+
+  <div class="field"><div class="label">Agent</div><div class="value" id="f-agent">—</div></div>
+  <div class="field"><div class="label">Merchant</div><div class="value" id="f-merchant">—</div></div>
+  <div class="field"><div class="label">Budget</div><div class="value amount" id="f-budget">—</div></div>
+  <div class="field"><div class="label">Categories</div><div class="value" id="f-categories">—</div></div>
+  <div class="field"><div class="label">Valid For</div><div class="value" id="f-valid">—</div></div>
+
+  <div class="hash-note">
+    The agent's prompt is <strong>not</strong> transmitted — only a SHA-256 hash is recorded for audit.
+    You are approving constraints, not the prompt.
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-reject" onclick="reject()">Reject</button>
+    <button class="btn btn-approve" onclick="approve()">Approve &amp; Sign</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const reqB64 = params.get('req');
+let mandateReq = null;
+
+if (reqB64) {
+  try {
+    mandateReq = JSON.parse(atob(reqB64.replace(/-/g,'+').replace(/_/g,'/')));
+    document.getElementById('f-agent').textContent = mandateReq.agent?.id || '—';
+    const merchants = mandateReq.constraints?.merchants;
+    document.getElementById('f-merchant').textContent = merchants?.length ? merchants.join(', ') : 'Any';
+    const max = mandateReq.constraints?.maxTotal || 0;
+    const cur = mandateReq.constraints?.currency || '???';
+    document.getElementById('f-budget').textContent = `${(max/100).toFixed(2)} ${cur}`;
+    const cats = mandateReq.constraints?.categories;
+    document.getElementById('f-categories').textContent = cats?.length ? cats.join(', ') : 'Any';
+    document.getElementById('f-valid').textContent = `${mandateReq.validHours || '?'} hours`;
+  } catch(e) {
+    showResult('err', 'Failed to decode mandate request: ' + e.message);
+  }
+}
+
+async function approve() {
+  if (!reqB64) return showResult('err', 'No mandate request');
+  try {
+    const res = await fetch('/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ req: reqB64 }),
+    });
+    const data = await res.json();
+    if (data.signedMandate) {
+      showResult('ok', 'Mandate signed! Hash: ' + data.signedMandate.mandateHash);
+      // If callback URL, redirect with signed mandate
+      if (mandateReq?.callbackUrl) {
+        const cb = new URL(mandateReq.callbackUrl);
+        cb.searchParams.set('mandate', btoa(JSON.stringify(data.signedMandate)));
+        setTimeout(() => location.href = cb.toString(), 1500);
+      }
+    } else {
+      showResult('err', data.error || 'Unknown error');
+    }
+  } catch(e) {
+    showResult('err', e.message);
+  }
+}
+
+function reject() {
+  fetch('/reject', { method: 'POST' });
+  showResult('err', 'Mandate rejected. Window can be closed.');
+}
+
+function showResult(type, msg) {
+  const el = document.getElementById('result');
+  el.className = 'result ' + type;
+  el.textContent = msg;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "mandate-shop",
+  "version": "0.1.0",
+  "description": "Demo merchant selling API credits under mandate",
+  "type": "module",
+  "scripts": {
+    "start": "node --import tsx src/server.ts",
+    "test": "node --import tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "agent-mandate-sdk": "file:../../sdk",
+    "mandate-verifier": "file:../../services/verifier",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^20.14.0",
+    "@types/express": "^4.17.21"
+  }
+}
