@@ -64,6 +64,10 @@ sdk/                TypeScript ESM SDK (Node 20+)
 program/            Solana Anchor program (Rust)
 adapters/
   x402/             x402 payment rail adapter
+  ap2/              Google AP2 (Agent Payments Protocol) adapter
+  verifiable-intent/ Mastercard Verifiable Intent adapter
+docs/
+  interop.md        Field-by-field mapping: Agent Mandate ↔ VI ↔ AP2
 ```
 
 ## Quick Start
@@ -107,6 +111,13 @@ The verifier checks in strict order, with early return:
 | `ORDER_LIMIT_EXCEEDED` | Order total exceeds per-order limit |
 | `BUDGET_EXCEEDED` | Cumulative spend would exceed total budget |
 | `ORDER_COUNT_EXCEEDED` | Number of orders would exceed limit |
+
+## Interop
+
+- **Google AP2**: We parse AP2 Open Mandates (SD-JWT) and map their constraint types (`payment.budget`, `payment.amount_range`, `checkout.allowed_merchants`) to our `Constraints`; we add the liability model and dispute window that AP2 does not have.
+- **Mastercard Verifiable Intent**: We consume VI's 3-layer SD-JWT chain (Issuer → User → Agent) in autonomous mode, extract constraints and agent key binding, and wrap them in our Mandate format; we add `traceHash`, `modelVersion`, and the `mandate-scope-v1` liability assignment that VI does not define.
+
+Both adapters are pure translation — `verifyOrder` is never modified. See [docs/interop.md](docs/interop.md) for the full field-by-field mapping.
 
 ## License
 
