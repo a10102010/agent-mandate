@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mandate-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER:-mandate}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB:-mandate}
+    volumes:
+      - mandate-pgdata:/var/lib/postgresql/data
+      - ./services/verifier/src/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-mandate}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  verifier:
+    build:
+      context: .
+      dockerfile: services/verifier/Dockerfile
+    container_name: mandate-verifier
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${PG_USER:-mandate}:${PG_PASSWORD}@postgres:5432/${PG_DB:-mandate}
+      PORT: "3200"
+    ports:
+      - "127.0.0.1:3200:3200"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3200/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  approve:
+    build:
+      context: .
+      dockerfile: apps/approve/Dockerfile
+    container_name: mandate-approve
+    restart: unless-stopped
+    environment:
+      PORT: "3100"
+    ports:
+      - "127.0.0.1:3100:3100"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3100/principal/pubkey').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  shop:
+    build:
+      context: .
+      dockerfile: apps/shop/Dockerfile
+    container_name: mandate-shop
+    restart: unless-stopped
+    environment:
+      PORT: "3300"
+      N7_API_URL: ${N7_API_URL:-http://host.docker.internal:8000}
+      N7_ADMIN_TOKEN: ${N7_ADMIN_TOKEN}
+    ports:
+      - "127.0.0.1:3300:3300"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3300/catalog').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mandate-pgdata:

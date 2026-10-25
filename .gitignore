@@ -6,3 +6,4 @@ test-ledger/
 *.js.map
 *.d.ts
 _vendor/
+.env
