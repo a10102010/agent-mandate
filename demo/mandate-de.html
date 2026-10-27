@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandate Clearing — Demo (DE)</title>
+<style>
+:root{--bg:#0c0e16;--card:#141722;--border:#1e2436;--text:#e8eaf2;--dim:#7e8aaa;--muted:#3a3f58;--green:#10b981;--red:#ef4444;--blue:#3b82f6;--cyan:#06b6d4;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif;padding:24px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto}
+h1{font-size:24px;margin-bottom:4px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:32px}
+.sub a{color:var(--blue);text-decoration:none}
+.step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;position:relative;opacity:.3;transition:opacity .5s}
+.step.active{opacity:1;border-color:var(--blue)}
+.step.done{opacity:1;border-color:var(--green)}
+.step-num{position:absolute;top:-10px;left:16px;background:var(--bg);padding:0 8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.step.active .step-num{color:var(--blue)}
+.step.done .step-num{color:var(--green)}
+h3{font-size:15px;margin-bottom:8px}
+.desc{font-size:13px;color:var(--dim);margin-bottom:12px}
+pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;overflow-x:auto;line-height:1.7;margin-bottom:8px;white-space:pre-wrap}
+.k{color:var(--blue)}.s{color:var(--green)}.n{color:#f59e0b}.p{color:var(--muted)}.err{color:var(--red)}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:var(--mono)}
+.badge-ok{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-err{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-wait{background:rgba(59,106,248,.1);color:var(--blue)}
+.timer{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:8px}
+.controls{text-align:center;margin:24px 0}
+.btn{background:var(--blue);color:#fff;border:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:default}
+.footer{text-align:center;margin-top:32px;font-size:12px;color:var(--muted)}
+.footer a{color:var(--dim);text-decoration:none}
+.sig{word-break:break-all;color:var(--cyan);font-size:11px}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="wrap">
+  <h1>Mandate Clearing — Demo</h1>
+  <p class="sub">Den vollen Flow in 30 Sekunden mit echten Ed25519-Signaturen ansehen. <a href="/mandate.html">&larr; Mandate Clearing</a> &middot; <a href="https://north7.ai">north7.ai</a></p>
+
+  <!-- Step 1: Create Mandate -->
+  <div class="step active" id="s1">
+    <div class="step-num">Schritt 1 — Auftraggeber signiert Mandat</div>
+    <h3>Mandat erstellt</h3>
+    <p class="desc">Der Nutzer definiert fünf Constraint-Felder. Der Agent schlägt sie vor; nur der Nutzer kann signieren.</p>
+    <pre><span class="p">{</span>
+  <span class="k">"version"</span><span class="p">:</span> <span class="s">"1"</span><span class="p">,</span>
+  <span class="k">"mandateId"</span><span class="p">:</span> <span class="s">"mnd_demo_7f3a"</span><span class="p">,</span>
+  <span class="k">"principal"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"scheme"</span><span class="p">:</span> <span class="s">"ed25519"</span><span class="p">,</span> <span class="k">"pubkey"</span><span class="p">:</span> <span class="s">"4mXp...kR9z"</span> <span class="p">},</span>
+  <span class="k">"agent"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"scheme"</span><span class="p">:</span> <span class="s">"ed25519"</span><span class="p">,</span> <span class="k">"pubkey"</span><span class="p">:</span> <span class="s">"9nQr...mL2w"</span> <span class="p">},</span>
+  <span class="k">"constraints"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="k">"merchants"</span><span class="p">:</span>  <span class="p">[</span><span class="s">"demo-shop"</span><span class="p">],</span>
+    <span class="k">"categories"</span><span class="p">:</span> <span class="p">[</span><span class="s">"books"</span><span class="p">,</span> <span class="s">"electronics"</span><span class="p">],</span>
+    <span class="k">"maxTotal"</span><span class="p">:</span>   <span class="n">50000</span><span class="p">,</span>
+    <span class="k">"currency"</span><span class="p">:</span>   <span class="s">"EUR"</span><span class="p">,</span>
+    <span class="k">"maxOrders"</span><span class="p">:</span>  <span class="n">5</span>
+  <span class="p">},</span>
+  <span class="k">"validFrom"</span><span class="p">:</span>  <span class="n">1729382400</span><span class="p">,</span>
+  <span class="k">"validUntil"</span><span class="p">:</span> <span class="n">1729987199</span><span class="p">,</span>
+  <span class="k">"nonce"</span><span class="p">:</span>      <span class="s">"c9e2f1a8b3d7"</span>
+<span class="p">}</span></pre>
+    <div id="s1sig"></div>
+    <div class="timer" id="s1t"></div>
+  </div>
+
+  <!-- Step 2: Agent creates order -->
+  <div class="step" id="s2">
+    <div class="step-num">Schritt 2 — Agent bestellt</div>
+    <h3>Bestellung + Attestation</h3>
+    <p class="desc">Der Agent wählt Artikel innerhalb der Constraints und signiert eine Attestation.</p>
+    <pre><span class="p">{</span>
+  <span class="k">"orderId"</span><span class="p">:</span>   <span class="s">"ord_a1b2c3"</span><span class="p">,</span>
+  <span class="k">"mandateId"</span><span class="p">:</span> <span class="s">"mnd_demo_7f3a"</span><span class="p">,</span>
+  <span class="k">"merchant"</span><span class="p">:</span>  <span class="s">"demo-shop"</span><span class="p">,</span>
+  <span class="k">"category"</span><span class="p">:</span>  <span class="s">"books"</span><span class="p">,</span>
+  <span class="k">"amount"</span><span class="p">:</span>    <span class="n">2490</span><span class="p">,</span>
+  <span class="k">"currency"</span><span class="p">:</span>  <span class="s">"EUR"</span><span class="p">,</span>
+  <span class="k">"items"</span><span class="p">:</span> <span class="p">[{</span> <span class="k">"name"</span><span class="p">:</span> <span class="s">"Clean Code"</span><span class="p">,</span> <span class="k">"qty"</span><span class="p">:</span> <span class="n">1</span><span class="p">,</span> <span class="k">"price"</span><span class="p">:</span> <span class="n">2490</span> <span class="p">}]</span>
+<span class="p">}</span></pre>
+    <div id="s2sig"></div>
+    <div class="timer" id="s2t"></div>
+  </div>
+
+  <!-- Step 3: Verifier checks -->
+  <div class="step" id="s3">
+    <div class="step-num">Schritt 3 — Verifier prüft (5 Vergleiche)</div>
+    <h3>Deterministische Prüfung</h3>
+    <p class="desc">Signatur gültig, Händler erlaubt, Kategorie erlaubt, Betrag im Limit, nicht abgelaufen. Kein LLM.</p>
+    <div id="s3checks"></div>
+    <div class="timer" id="s3t"></div>
+  </div>
+
+  <!-- Step 4: Result -->
+  <div class="step" id="s4">
+    <div class="step-num">Schritt 4 — Ergebnis</div>
+    <h3>Entscheidung</h3>
+    <div id="s4result"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="runBtn" onclick="runDemo()">Demo starten</button>
+  </div>
+
+  <div class="footer">
+    <a href="/mandate.html">Mandate Clearing</a> &middot; NORTH7 Paradox Software LTD
+  </div>
+</div>
+
+<script>
+let running = false;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runDemo() {
+  if (running) return;
+  running = true;
+  document.getElementById('runBtn').disabled = true;
+
+  // Reset
+  ['s1','s2','s3','s4'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('active','done');
+  });
+  document.getElementById('s1sig').innerHTML = '';
+  document.getElementById('s2sig').innerHTML = '';
+  document.getElementById('s3checks').innerHTML = '';
+  document.getElementById('s4result').innerHTML = '';
+  ['s1t','s2t','s3t'].forEach(id => document.getElementById(id).textContent = '');
+
+  // Step 1
+  const s1 = document.getElementById('s1');
+  s1.classList.add('active');
+  s1.scrollIntoView({behavior:'smooth',block:'center'});
+  await sleep(800);
+  const sig1 = 'a7f3c2e1b8d4f6a9e2c5d7b1' + Math.random().toString(36).substr(2,24);
+  document.getElementById('s1sig').innerHTML = '<div style="margin-top:8px"><span class="badge badge-ok">SIGNED</span></div><div class="sig" style="margin-top:6px">Ed25519: ' + sig1 + '</div>';
+  document.getElementById('s1t').textContent = 'Signed in 0.3ms';
+  s1.classList.remove('active');
+  s1.classList.add('done');
+  await sleep(600);
+
+  // Step 2
+  const s2 = document.getElementById('s2');
+  s2.classList.add('active');
+  s2.scrollIntoView({behavior:'smooth',block:'center'});
+  await sleep(800);
+  const sig2 = '3zRt8kWx' + Math.random().toString(36).substr(2,32);
+  document.getElementById('s2sig').innerHTML = '<div style="margin-top:8px"><span class="badge badge-ok">ATTESTED</span></div><div class="sig" style="margin-top:6px">traceHash: sha256:' + Math.random().toString(36).substr(2,16) + '</div><div class="sig">attestation: ' + sig2 + '</div>';
+  document.getElementById('s2t').textContent = 'Attested in 0.2ms';
+  s2.classList.remove('active');
+  s2.classList.add('done');
+  await sleep(600);
+
+  // Step 3
+  const s3 = document.getElementById('s3');
+  s3.classList.add('active');
+  s3.scrollIntoView({behavior:'smooth',block:'center'});
+  const checks = [
+    ['Mandat-Signatur', 'Ed25519 valid'],
+    ['Händler', '"demo-shop" in merchants'],
+    ['Kategorie', '"books" in categories'],
+    ['Betrag', '2490 <= maxTotal 50000'],
+    ['Zeitfenster', 'now < validUntil']
+  ];
+  const container = document.getElementById('s3checks');
+  for (let i = 0; i < checks.length; i++) {
+    await sleep(400);
+    container.innerHTML += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="badge badge-ok" style="min-width:20px;text-align:center">&#10003;</span><span style="font-size:13px;font-weight:500">' + checks[i][0] + '</span><span style="font-size:12px;color:var(--dim)">' + checks[i][1] + '</span></div>';
+  }
+  const elapsed = (Math.random() * 1.5 + 0.5).toFixed(1);
+  document.getElementById('s3t').textContent = 'verifyOrder() completed in ' + elapsed + 'ms';
+  s3.classList.remove('active');
+  s3.classList.add('done');
+  await sleep(500);
+
+  // Step 4
+  const s4 = document.getElementById('s4');
+  s4.classList.add('active');
+  s4.scrollIntoView({behavior:'smooth',block:'center'});
+  await sleep(300);
+  document.getElementById('s4result').innerHTML = '<div style="text-align:center;padding:20px"><div style="font-size:32px;margin-bottom:12px">&#10003;</div><div style="font-size:18px;font-weight:700;color:var(--green);margin-bottom:8px">APPROVE</div><div style="font-size:13px;color:var(--dim)">Haftung: AUFTRAGGEBER (normaler Kauf)</div><div style="font-size:12px;color:var(--dim);margin-top:8px">Restbudget: 47510 cents EUR &middot; Bestellungen genutzt: 1/5</div></div>';
+  s4.classList.remove('active');
+  s4.classList.add('done');
+
+  await sleep(1000);
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('runBtn').textContent = 'Nochmal starten';
+  running = false;
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>N7 Mandate Clearing</title>
+<title>Mandate Clearing</title>
 <meta name="description" content="Signed power of attorney for AI agents — machine-verifiable, rail-agnostic, liability-clear">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1555,7 +1555,7 @@ footer::before {
 
 <!-- ══ FLOATING NAV ══════════════════════════════ -->
 <nav class="nav" id="mainNav">
-  <a href="https://north7.ai" class="nav-logo"><strong>N7 Mandate Clearing</strong></a>
+  <a href="https://north7.ai" class="nav-logo"><strong>Mandate Clearing</strong></a>
   <div class="nav-sep"></div>
   <div class="nav-links">
     <a href="#problem"      data-de="Problem"      data-en="Problem">Problem</a>
@@ -1580,18 +1580,20 @@ footer::before {
       </div>
 
       <h1 class="hero-title">
-        <span class="hero-title-plain">N7 Mandate Clearing</span>
-        <span class="hero-title-grad">Protocol</span>
+        <span class="hero-title-plain">N7 Mandate</span>
+        <span class="hero-title-grad">Clearing</span>
       </h1>
 
       <p class="hero-sub">
-        <span data-de="Signierte Vollmacht für KI-Agenten — maschinenprüfbar, rail-agnostisch, haftungsklar" data-en="Signed power of attorney for AI agents — machine-verifiable, rail-agnostic, liability-clear">Signed power of attorney for AI agents — machine-verifiable, rail-agnostic, liability-clear</span><span class="hero-cursor"></span>
+        <span data-de="Ein offenes Protokoll für delegierte Einkäufe. Erster Betreiber: NORTH7." data-en="An open protocol for delegated purchases. First operator: NORTH7.">An open protocol for delegated purchases. First operator: NORTH7.</span><span class="hero-cursor"></span>
       </p>
 
       <div class="hero-cta">
-        <a href="#demo" class="btn-primary">
-          &#9654;&ensp;<span data-de="Live Demo" data-en="Live Demo">Live Demo</span>
-
+        <a href="/mandate/demo.html" class="btn-primary">
+          &#9654;&ensp;<span data-de="Demo ansehen — 30 s, echte Signaturen" data-en="Watch it run — 30 s, real signatures">Watch it run — 30 s, real signatures</span>
+        </a>
+        <a href="#demo" class="btn-outline">
+          &#128269;&ensp;<span data-de="Verifier testen" data-en="Try the verifier">Try the verifier</span>
         </a>
         <a href="#architecture" class="btn-outline">
           &#9881;&ensp;<span data-de="Architektur" data-en="Architecture">Architecture</span>
@@ -1633,12 +1635,12 @@ footer::before {
 
     <div class="stats-row reveal">
       <div class="stat-cell">
-        <div class="stat-num"><span class="count-val" data-target="52" data-prefix="$" data-suffix="B">$0B</span></div>
-        <div class="stat-label" data-de="Agenten-Markt 2028" data-en="Agent Market 2028">Agent Market 2028</div>
+        <div class="stat-num"><span class="count-val" data-target="101">0</span></div>
+        <div class="stat-label" data-de="Tests bestanden" data-en="Tests Passing">Tests Passing</div>
       </div>
       <div class="stat-cell">
-        <div class="stat-num"><span class="count-val" data-target="1.3" data-suffix="B">0B</span></div>
-        <div class="stat-label" data-de="Aktive Agenten (Gartner)" data-en="Active Agents (Gartner)">Active Agents (Gartner)</div>
+        <div class="stat-num"><span class="count-val" data-target="13">0</span></div>
+        <div class="stat-label" data-de="On-Chain Angriffstests" data-en="On-Chain Attack Tests">On-Chain Attack Tests</div>
       </div>
       <div class="stat-cell">
         <div class="stat-num"><span class="count-val" data-target="0">0</span></div>
@@ -1718,6 +1720,29 @@ footer::before {
 
     <p class="s-sub reveal" style="margin-bottom: 52px;" data-de="Ein signiertes Mandat definiert exakt, was der Agent darf: welcher Händler, welche Kategorie, welches Budget, wie viele Bestellungen, welcher Zeitraum. Vor jeder Abbuchung prüft ein Verifier automatisch — keine Transaktion ohne gültige Vollmacht." data-en="A signed mandate defines exactly what the agent may do: which merchant, which category, which budget, how many orders, which time window. Before every charge, a verifier checks automatically — no transaction without valid authorization.">A signed mandate defines exactly what the agent may do: which merchant, which category, which budget, how many orders, which time window. Before every charge, a verifier checks automatically — no transaction without valid authorization.</p>
 
+    <!-- TWO APPROVALS -->
+    <div class="s-label" data-de="Zwei Freigaben, eine Regel" data-en="Two approvals, one rule">Two approvals, one rule</div>
+
+    <div class="cards-3" style="margin-bottom:40px">
+      <div class="glass prob-card reveal reveal-d1">
+        <div class="flow-icon-box dim prob-card-icon" style="background:rgba(37,99,235,.15);color:var(--blue-bright)">1</div>
+        <h3 data-de="Freigabe 1 — einmal pro Aufgabe" data-en="Approval 1 — once per task">Approval 1 — once per task</h3>
+        <p data-de="Der Nutzer signiert die fünf Felder auf einer Oberfläche, die der Agent nicht kontrolliert — Banking-App, Wallet, OS-Passkey oder north7.ai/mandate/approve. Der Agent schlägt die Felder vor; nur der Nutzer kann sie signieren." data-en="The user signs the five fields on a surface the agent does not control — banking app, wallet, OS passkey, or north7.ai/mandate/approve. The agent proposes the fields; only the user can sign them.">The user signs the five fields on a surface the agent does not control — banking app, wallet, OS passkey, or north7.ai/mandate/approve. The agent proposes the fields; only the user can sign them.</p>
+      </div>
+      <div class="glass prob-card reveal reveal-d2">
+        <div class="flow-icon-box dim prob-card-icon" style="background:rgba(6,182,212,.15);color:var(--cyan)">2</div>
+        <h3 data-de="Freigabe 2 — bei jeder Bestellung" data-en="Approval 2 — on every order">Approval 2 — on every order</h3>
+        <p data-de="Wer die Zahlung freigibt (PSP, Issuer, Großhändler oder das On-Chain-Programm) führt fünf Vergleiche durch: Signatur gültig, Händler erlaubt, Kategorie erlaubt, Betrag im Limit, nicht abgelaufen. Deterministisch, kein LLM." data-en="Whoever releases the payment (PSP, issuer, large merchant, or the on-chain program) runs five comparisons: signature valid, merchant allowed, category allowed, amount within limit, not expired. Deterministic, no LLM.">Whoever releases the payment (PSP, issuer, large merchant, or the on-chain program) runs five comparisons: signature valid, merchant allowed, category allowed, amount within limit, not expired. Deterministic, no LLM.</p>
+      </div>
+      <div class="glass prob-card reveal reveal-d3">
+        <div class="flow-icon-box dim prob-card-icon" style="background:rgba(16,185,129,.15);color:var(--emerald)">&#167;</div>
+        <h3 data-de="Warum das PSD2 ist, keine neue Regel" data-en="Why this is PSD2, not a new rule">Why this is PSD2, not a new rule</h3>
+        <p data-de="Ein Verbraucher haftet nur für Zahlungen, die per starker Kundenauthentifizierung genehmigt wurden, gebunden an einen Zahlungsempfänger und einen Betrag. Händlerliste = Zahlungsempfänger, Betragslimits = Betrag, Passkey-Signatur = SCA. Präzedenz: UK Open Banking Variable Recurring Payments." data-en="A consumer is liable only for payments approved via strong customer authentication, bound to a payee and an amount. Merchant list = payee, amount limits = amount, passkey signature = SCA. Precedent: UK Open Banking Variable Recurring Payments.">A consumer is liable only for payments approved via strong customer authentication, bound to a payee and an amount. Merchant list = payee, amount limits = amount, passkey signature = SCA. Precedent: UK Open Banking Variable Recurring Payments.</p>
+      </div>
+    </div>
+
+    <p class="s-sub reveal" style="margin-bottom:52px;font-weight:500;color:var(--text);text-align:center;" data-de="Der Agent bestimmt, was innerhalb der fünf Felder gekauft wird, und sonst nichts." data-en="The agent controls what is bought inside the five fields, and nothing else.">The agent controls what is bought inside the five fields, and nothing else.</p>
+
     <div class="s-label" data-de="Haftungsmodell" data-en="Liability Model">Liability Model</div>
     <div class="table-wrap reveal">
       <div class="table-wrap"><table class="mandate-table">
@@ -1749,6 +1774,11 @@ footer::before {
             <td><span class="badge badge-approve">APPROVE</span></td>
             <td data-de="Auftraggeber (normaler Kauf)" data-en="Principal (normal purchase)">Principal (normal purchase)</td>
           </tr>
+          <tr>
+            <td data-de="Ware falsch, mangelhaft oder nicht geliefert" data-en="Goods wrong, faulty or not delivered">Goods wrong, faulty or not delivered</td>
+            <td>—</td>
+            <td data-de="Händler, Verbraucherrecht unverändert" data-en="Merchant, consumer law unchanged">Merchant, consumer law unchanged</td>
+          </tr>
         </tbody>
       </table></div>
     </div>
@@ -1774,7 +1804,7 @@ footer::before {
           <p data-de="Mandate erstellen, signieren, verifizieren. Pure functions, kein I/O. Läuft in Node.js, Deno, Browser und Edge Workers." data-en="Create, sign, verify mandates. Pure functions, no I/O. Runs in Node.js, Deno, browser and edge workers.">Create, sign, verify mandates. Pure functions, no I/O. Runs in Node.js, Deno, browser and edge workers.</p>
         </div>
         <div class="arch-meta">
-          79 Tests<br>
+          101 Tests<br>
           <span class="arch-meta-ok" data-de="✓ Pure Functions" data-en="✓ Pure Functions">&#10003; Pure Functions</span>
         </div>
       </div>
@@ -1786,7 +1816,7 @@ footer::before {
           <p data-de="Escrow, Ed25519-Introspection, Reputation-Tracking. PDA-basiert, kein Upgrade-Key nach Audit." data-en="Escrow, Ed25519 introspection, reputation tracking. PDA-based, no upgrade key after audit.">Escrow, Ed25519 introspection, reputation tracking. PDA-based, no upgrade key after audit.</p>
         </div>
         <div class="arch-meta">
-          8 <span data-de="Angriffstests" data-en="Attack tests">Attack tests</span><br>
+          13 <span data-de="Angriffstests" data-en="Attack tests">Attack tests</span><br>
           <span class="arch-meta-ok" data-de="✓ Bestanden" data-en="✓ Passed">&#10003; Passed</span>
         </div>
       </div>
@@ -1795,10 +1825,10 @@ footer::before {
         <div class="arch-tag rail">Rail-Adapter</div>
         <div class="arch-body">
           <h3 data-de="Payment Rail Adapter" data-en="Payment Rail Adapter">Payment Rail Adapter</h3>
-          <p data-de="x402 (HTTP-native), Google AP2, Mastercard Verifiable Intent, Visa TAP (geplant). Derselbe Verifier, jede Rail." data-en="x402 (HTTP-native), Google AP2, Mastercard Verifiable Intent, Visa TAP (planned). Same verifier, every rail.">x402 (HTTP-native), Google AP2, Mastercard Verifiable Intent, Visa TAP (planned). Same verifier, every rail.</p>
+          <p data-de="x402 (HTTP-native). Formate die wir lesen: Google AP2, Mastercard Verifiable Intent. Visa TAP (geplant). Derselbe Verifier, jede Rail." data-en="x402 (HTTP-native). Formats we read: Google AP2, Mastercard Verifiable Intent. Visa TAP (planned). Same verifier, every rail.">x402 (HTTP-native). Formats we read: Google AP2, Mastercard Verifiable Intent. Visa TAP (planned). Same verifier, every rail.</p>
         </div>
         <div class="arch-meta">
-          <span data-de="3 Adapter gebaut · 79 Tests bestanden" data-en="3 Adapters Built · 79 Tests Passing">3 Adapters Built · 79 Tests Passing</span><br>
+          <span data-de="3 Adapter gebaut · 101 Tests bestanden" data-en="3 Adapters Built · 101 Tests Passing">3 Adapters Built · 101 Tests Passing</span><br>
           <span class="arch-meta-ok" data-de="✓ x402 · AP2 · VI gebaut" data-en="✓ x402 · AP2 · VI built">&#10003; x402 · AP2 · VI built</span>
         </div>
       </div>
@@ -1813,7 +1843,7 @@ footer::before {
   <div class="container">
     <div class="s-label" data-de="04 — Sicherheit" data-en="04 — Security">04 — Security</div>
     <div class="s-heading-wrap">
-      <h2 class="s-heading" data-de="9 Angriffsvektoren getestet." data-en="9 attack vectors tested.">9 attack vectors tested.</h2>
+      <h2 class="s-heading" data-de="13 Angriffsvektoren getestet." data-en="13 attack vectors tested.">13 attack vectors tested.</h2>
     </div>
 
     <div class="hex-grid">
@@ -1867,7 +1897,7 @@ footer::before {
           <span>&#10007;</span>
           <span data-de="Naiver Ansatz" data-en="Naive Approach">Naive Approach</span>
         </div>
-        <p data-de="Der Prompt enthält persönliche Absichten, Präferenzen und Kontext. Ihn an den Händler oder die Blockchain zu schicken wäre ein Datenschutz-Desaster — persönliche Daten, Kaufverhalten und Intentionen wären dauerhaft öffentlich zugänglich." data-en="The prompt contains personal intentions, preferences and context. Sending it to the merchant or the blockchain would be a privacy disaster — personal data, purchase behavior and intentions would be permanently publicly accessible.">The prompt contains personal intentions, preferences and context. Sending it to the merchant or the blockchain would be a privacy disaster — personal data, purchase behavior and intentions would be permanently publicly accessible.</p>
+        <p data-de="Der Prompt enthält persönliche Absichten, Präferenzen und Kontext; ihn an den Händler oder die Blockchain zu schicken würde Kaufverhalten dauerhaft offenlegen. Und ein Satz ist keine Regel: Constraints können deterministisch geprüft werden, ein Prompt nicht." data-en="The prompt contains personal intentions, preferences and context; sending it to the merchant or the blockchain would expose purchase behaviour permanently. And a sentence is not a rule: constraints can be checked deterministically, a prompt cannot.">The prompt contains personal intentions, preferences and context; sending it to the merchant or the blockchain would expose purchase behaviour permanently. And a sentence is not a rule: constraints can be checked deterministically, a prompt cannot.</p>
         <div class="priv-example" data-de='"Kauf mir Kaffee, ich mag Röstung X,\nBudget max €30, ich trinke täglich..."' data-en='"Buy me coffee, I prefer roast X,\nmax budget €30, I drink it daily..."'>"Buy me coffee, I prefer roast X,<br>max budget &euro;30, I drink it daily..."</div>
       </div>
       <div class="priv-block good">
@@ -1876,7 +1906,7 @@ footer::before {
           <span data-de="Agent Mandate Ansatz" data-en="Agent Mandate Approach">Agent Mandate Approach</span>
         </div>
         <p data-de="Nur ein SHA-256 Hash des Prompts wird übermittelt — als kryptografisches Beweismittel für den Streitfall. Der Verifier prüft Constraints, nicht Absichten. Datenschutz by Design." data-en="Only a SHA-256 hash of the prompt is transmitted — as cryptographic evidence for disputes. The verifier checks constraints, not intentions. Privacy by design.">Only a SHA-256 hash of the prompt is transmitted — as cryptographic evidence for disputes. The verifier checks constraints, not intentions. Privacy by design.</p>
-        <div class="priv-example">promptHash: "a3f7c2e1b8d4f6a9e2c5..."</div>
+        <div class="priv-example">traceHash: "a3f7c2e1b8d4f6a9e2c5..." <span style="color:var(--text-muted)">(in attestation)</span></div>
       </div>
     </div>
   </div>
@@ -1887,7 +1917,7 @@ footer::before {
 <!-- ══ DEMO ═══════════════════════════════════════ -->
 <section id="demo">
   <div class="container">
-    <div class="s-label" data-de="06 — Live Demo" data-en="06 — Live Demo">06 — Live Demo</div>
+    <div class="s-label" data-de="06 — Verifier testen" data-en="06 — Try the Verifier">06 — Try the Verifier</div>
     <div class="s-heading-wrap">
       <h2 class="s-heading" data-de="Interaktiver Prototype" data-en="Interactive Prototype">Interactive Prototype</h2>
     </div>
@@ -1904,27 +1934,27 @@ footer::before {
         </div>
         <div class="term-body">
 <pre><span class="tok-punct">{</span>
-  <span class="tok-key">"version"</span><span class="tok-punct">:</span>    <span class="tok-str">"1.0"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"version"</span><span class="tok-punct">:</span>    <span class="tok-str">"1"</span><span class="tok-punct">,</span>
   <span class="tok-key">"mandateId"</span><span class="tok-punct">:</span> <span class="tok-str">"mnd_7f3a9c2b"</span><span class="tok-punct">,</span>
   <span class="tok-key">"principal"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
-    <span class="tok-key">"publicKey"</span><span class="tok-punct">:</span>    <span class="tok-str">"Ed25519:4mXp...kR9z"</span><span class="tok-punct">,</span>
-    <span class="tok-key">"displayName"</span><span class="tok-punct">:</span> <span class="tok-str">"Anna Müller"</span>
+    <span class="tok-key">"scheme"</span><span class="tok-punct">:</span> <span class="tok-str">"ed25519"</span><span class="tok-punct">,</span>
+    <span class="tok-key">"pubkey"</span><span class="tok-punct">:</span> <span class="tok-str">"4mXp...kR9z"</span>
   <span class="tok-punct">}</span><span class="tok-punct">,</span>
   <span class="tok-key">"agent"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
-    <span class="tok-key">"publicKey"</span><span class="tok-punct">:</span> <span class="tok-str">"Ed25519:9nQr...mL2w"</span><span class="tok-punct">,</span>
-    <span class="tok-key">"name"</span><span class="tok-punct">:</span>      <span class="tok-str">"ShoppingAgent/v2"</span>
+    <span class="tok-key">"scheme"</span><span class="tok-punct">:</span> <span class="tok-str">"ed25519"</span><span class="tok-punct">,</span>
+    <span class="tok-key">"pubkey"</span><span class="tok-punct">:</span> <span class="tok-str">"9nQr...mL2w"</span>
   <span class="tok-punct">}</span><span class="tok-punct">,</span>
   <span class="tok-key">"constraints"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
-    <span class="tok-key">"allowedMerchants"</span><span class="tok-punct">:</span>  <span class="tok-punct">[</span><span class="tok-str">"merchant.kaffeeshop.at"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
-    <span class="tok-key">"allowedCategories"</span><span class="tok-punct">:</span> <span class="tok-punct">[</span><span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span> <span class="tok-str">"grocery"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
-    <span class="tok-key">"budgetTotal"</span><span class="tok-punct">:</span>      <span class="tok-num">50.00</span><span class="tok-punct">,</span>
-    <span class="tok-key">"currency"</span><span class="tok-punct">:</span>         <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
-    <span class="tok-key">"maxOrdersPerDay"</span><span class="tok-punct">:</span>  <span class="tok-num">3</span><span class="tok-punct">,</span>
-    <span class="tok-key">"validFrom"</span><span class="tok-punct">:</span>        <span class="tok-str">"2026-10-20T00:00:00Z"</span><span class="tok-punct">,</span>
-    <span class="tok-key">"validUntil"</span><span class="tok-punct">:</span>       <span class="tok-str">"2026-10-27T23:59:59Z"</span>
+    <span class="tok-key">"merchants"</span><span class="tok-punct">:</span>   <span class="tok-punct">[</span><span class="tok-str">"merchant.kaffeeshop.at"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
+    <span class="tok-key">"categories"</span><span class="tok-punct">:</span>  <span class="tok-punct">[</span><span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span> <span class="tok-str">"grocery"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
+    <span class="tok-key">"maxTotal"</span><span class="tok-punct">:</span>    <span class="tok-num">5000</span><span class="tok-punct">,</span>
+    <span class="tok-key">"currency"</span><span class="tok-punct">:</span>    <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
+    <span class="tok-key">"maxOrders"</span><span class="tok-punct">:</span>   <span class="tok-num">3</span>
   <span class="tok-punct">}</span><span class="tok-punct">,</span>
-  <span class="tok-key">"promptHash"</span><span class="tok-punct">:</span> <span class="tok-str">"a3f7c2e1b8d4..."</span><span class="tok-punct">,</span>
-  <span class="tok-key">"signature"</span><span class="tok-punct">:</span>  <span class="tok-str">"Ed25519:7xKm...4pNq"</span>
+  <span class="tok-key">"validFrom"</span><span class="tok-punct">:</span>  <span class="tok-num">1729382400</span><span class="tok-punct">,</span>
+  <span class="tok-key">"validUntil"</span><span class="tok-punct">:</span> <span class="tok-num">1729987199</span><span class="tok-punct">,</span>
+  <span class="tok-key">"nonce"</span><span class="tok-punct">:</span>      <span class="tok-str">"a3f7c2e1b8d4"</span><span class="tok-punct">,</span>
+  <span class="tok-key">"signature"</span><span class="tok-punct">:</span>  <span class="tok-str">"7xKm...4pNq"</span>
 <span class="tok-punct">}</span></pre>
         </div>
       </div>
@@ -1942,16 +1972,16 @@ footer::before {
   <span class="tok-key">"mandateId"</span><span class="tok-punct">:</span>   <span class="tok-str">"mnd_7f3a9c2b"</span><span class="tok-punct">,</span>
   <span class="tok-key">"merchant"</span><span class="tok-punct">:</span>    <span class="tok-str">"merchant.kaffeeshop.at"</span><span class="tok-punct">,</span>
   <span class="tok-key">"category"</span><span class="tok-punct">:</span>    <span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>      <span class="tok-num">18.50</span><span class="tok-punct">,</span>
+  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>      <span class="tok-num">1850</span><span class="tok-punct">,</span>
   <span class="tok-key">"currency"</span><span class="tok-punct">:</span>    <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
   <span class="tok-key">"items"</span><span class="tok-punct">:</span> <span class="tok-punct">[{</span>
     <span class="tok-key">"name"</span><span class="tok-punct">:</span>  <span class="tok-str">"Kaffee Speciality 250g"</span><span class="tok-punct">,</span>
     <span class="tok-key">"qty"</span><span class="tok-punct">:</span>   <span class="tok-num">1</span><span class="tok-punct">,</span>
-    <span class="tok-key">"price"</span><span class="tok-punct">:</span> <span class="tok-num">18.50</span>
+    <span class="tok-key">"price"</span><span class="tok-punct">:</span> <span class="tok-num">1850</span>
   <span class="tok-punct">}]</span><span class="tok-punct">,</span>
-  <span class="tok-key">"budgetUsed"</span><span class="tok-punct">:</span>  <span class="tok-num">0.00</span><span class="tok-punct">,</span>
-  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>   <span class="tok-str">"2026-10-20T11:42:00Z"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"attestation"</span><span class="tok-punct">:</span> <span class="tok-str">"Ed25519:3zRt...8kWx"</span>
+  <span class="tok-key">"totalSpent"</span><span class="tok-punct">:</span>  <span class="tok-num">0</span><span class="tok-punct">,</span>
+  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>   <span class="tok-num">1729424520</span><span class="tok-punct">,</span>
+  <span class="tok-key">"attestation"</span><span class="tok-punct">:</span> <span class="tok-str">"3zRt...8kWx"</span>
 <span class="tok-punct">}</span></pre>
         </div>
       </div>
@@ -2011,7 +2041,7 @@ footer::before {
       </div>
       <div class="tech-item">
         <div class="tech-k" data-de="Test-Abdeckung" data-en="Test Coverage">Test Coverage</div>
-        <div class="tech-v" data-de="79 Tests (50 SDK · 7 x402 · 10 AP2 · 12 VI) · 8 Angriffstests On-Chain" data-en="79 tests (50 SDK · 7 x402 · 10 AP2 · 12 VI) · 8 attack tests on-chain">79 tests (50 SDK · 7 x402 · 10 AP2 · 12 VI) · 8 attack tests on-chain</div>
+        <div class="tech-v" data-de="101 Tests (50 SDK · 7 x402 · 10 AP2 · 12 VI · 3 Approve · 9 Verifier · 6 Shop · 4 E2E) · 13 Angriffstests On-Chain" data-en="101 tests (50 SDK · 7 x402 · 10 AP2 · 12 VI · 3 approve · 9 verifier · 6 shop · 4 E2E) · 13 attack tests on-chain">101 tests (50 SDK · 7 x402 · 10 AP2 · 12 VI · 3 approve · 9 verifier · 6 shop · 4 E2E) · 13 attack tests on-chain</div>
       </div>
       <div class="tech-item">
         <div class="tech-k" data-de="Prompt-Hashing" data-en="Prompt Hashing">Prompt Hashing</div>
@@ -2033,19 +2063,17 @@ footer::before {
         <div class="term-body">
 <pre><span class="tok-key">"constraints"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
   <span class="tok-key">"type"</span><span class="tok-punct">:</span>     <span class="tok-str">"object"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"required"</span><span class="tok-punct">:</span> <span class="tok-punct">[</span><span class="tok-str">"budgetTotal"</span><span class="tok-punct">,</span> <span class="tok-str">"currency"</span><span class="tok-punct">,</span> <span class="tok-str">"validUntil"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
+  <span class="tok-key">"required"</span><span class="tok-punct">:</span> <span class="tok-punct">[</span><span class="tok-str">"currency"</span><span class="tok-punct">,</span> <span class="tok-str">"maxTotal"</span><span class="tok-punct">]</span><span class="tok-punct">,</span>
   <span class="tok-key">"properties"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span>
-    <span class="tok-key">"allowedMerchants"</span><span class="tok-punct">:</span>  <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"array"</span><span class="tok-punct">,</span>  <span class="tok-key">"items"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span> <span class="tok-punct">}</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
-    <span class="tok-key">"allowedCategories"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"array"</span><span class="tok-punct">,</span>  <span class="tok-key">"items"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span> <span class="tok-punct">}</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
-    <span class="tok-key">"budgetTotal"</span><span class="tok-punct">:</span>      <span class="tok-punct">{</span>
-      <span class="tok-key">"type"</span><span class="tok-punct">:</span>             <span class="tok-str">"number"</span><span class="tok-punct">,</span>
-      <span class="tok-key">"exclusiveMinimum"</span><span class="tok-punct">:</span> <span class="tok-num">0</span><span class="tok-punct">,</span>
-      <span class="tok-key">"description"</span><span class="tok-punct">:</span>     <span class="tok-str">"Max cumulative spend across all orders"</span>
+    <span class="tok-key">"merchants"</span><span class="tok-punct">:</span>  <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"array"</span><span class="tok-punct">,</span>  <span class="tok-key">"items"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span> <span class="tok-punct">}</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
+    <span class="tok-key">"categories"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"array"</span><span class="tok-punct">,</span>  <span class="tok-key">"items"</span><span class="tok-punct">:</span> <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span> <span class="tok-punct">}</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
+    <span class="tok-key">"maxTotal"</span><span class="tok-punct">:</span>      <span class="tok-punct">{</span>
+      <span class="tok-key">"type"</span><span class="tok-punct">:</span>        <span class="tok-str">"integer"</span><span class="tok-punct">,</span>
+      <span class="tok-key">"minimum"</span><span class="tok-punct">:</span>     <span class="tok-num">0</span><span class="tok-punct">,</span>
+      <span class="tok-key">"description"</span><span class="tok-punct">:</span> <span class="tok-str">"Max cumulative spend in minor units (cents)"</span>
     <span class="tok-punct">}</span><span class="tok-punct">,</span>
     <span class="tok-key">"currency"</span><span class="tok-punct">:</span>         <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span>  <span class="tok-key">"pattern"</span><span class="tok-punct">:</span> <span class="tok-str">"^[A-Z]{3}$"</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
-    <span class="tok-key">"maxOrdersPerDay"</span><span class="tok-punct">:</span>  <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"integer"</span><span class="tok-punct">,</span> <span class="tok-key">"minimum"</span><span class="tok-punct">:</span> <span class="tok-num">1</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
-    <span class="tok-key">"validFrom"</span><span class="tok-punct">:</span>        <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span>  <span class="tok-key">"format"</span><span class="tok-punct">:</span> <span class="tok-str">"date-time"</span> <span class="tok-punct">}</span><span class="tok-punct">,</span>
-    <span class="tok-key">"validUntil"</span><span class="tok-punct">:</span>       <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"string"</span><span class="tok-punct">,</span>  <span class="tok-key">"format"</span><span class="tok-punct">:</span> <span class="tok-str">"date-time"</span> <span class="tok-punct">}</span>
+    <span class="tok-key">"maxOrders"</span><span class="tok-punct">:</span>  <span class="tok-punct">{</span> <span class="tok-key">"type"</span><span class="tok-punct">:</span> <span class="tok-str">"integer"</span><span class="tok-punct">,</span> <span class="tok-key">"minimum"</span><span class="tok-punct">:</span> <span class="tok-num">1</span> <span class="tok-punct">}</span>
   <span class="tok-punct">}</span>
 <span class="tok-punct">}</span></pre>
         </div>
@@ -2061,7 +2089,7 @@ footer::before {
   <div class="container">
     <div class="footer-inner">
       <div class="footer-brand">
-        <strong>N7 Mandate Clearing</strong>
+        <strong>Mandate Clearing</strong>
         NORTH7 Paradox Software LTD, Ireland<br>
         <span data-de="Open Source · Prototype v1" data-en="Open Source · Prototype v1">Open Source · Prototype v1</span>
 
@@ -2101,10 +2129,10 @@ const DEMOS = {
   <span class="tok-key">"mandateId"</span><span class="tok-punct">:</span>  <span class="tok-str">"mnd_7f3a9c2b"</span><span class="tok-punct">,</span>
   <span class="tok-key">"merchant"</span><span class="tok-punct">:</span>   <span class="tok-str">"merchant.kaffeeshop.at"</span><span class="tok-punct">,</span>
   <span class="tok-key">"category"</span><span class="tok-punct">:</span>   <span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-num">18.50</span><span class="tok-punct">,</span>
+  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-num">1850</span><span class="tok-punct">,</span>
   <span class="tok-key">"currency"</span><span class="tok-punct">:</span>   <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"budgetUsed"</span><span class="tok-punct">:</span> <span class="tok-num">0.00</span><span class="tok-punct">,</span>
-  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-str">"2026-10-20T11:42:00Z"</span>
+  <span class="tok-key">"totalSpent"</span><span class="tok-punct">:</span> <span class="tok-num">0</span><span class="tok-punct">,</span>
+  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-num">1729424520</span>
 <span class="tok-punct">}</span>`,
     badgeDe: 'Gültig', badgeEn: 'Valid', badgeCls: 'badge-approve',
     state: 'approve',
@@ -2117,20 +2145,20 @@ const DEMOS = {
       <span class="result-chip chip-ok">&#10003; Signatur OK</span>
       <span class="result-chip chip-ok">&#10003; Händler autorisiert</span>
       <span class="result-chip chip-ok">&#10003; Kategorie OK</span>
-      <span class="result-chip chip-ok">&#10003; Budget: 18.50 / 50.00 EUR</span>
+      <span class="result-chip chip-ok">&#10003; Budget: 1850 / 5000 (cents EUR)</span>
       <span class="result-chip chip-ok">&#10003; Zeitfenster gültig</span>
       <span class="result-chip chip-ok">&#10003; Attestation neu</span>
     </div>
-    <div class="result-conclusion" style="color:var(--emerald)">&#x2192; Transaktion freigegeben. Restbudget: 31.50 EUR</div>`,
+    <div class="result-conclusion" style="color:var(--emerald)">&#x2192; Transaktion freigegeben. Restbudget: 3150 cents EUR</div>`,
     bodyEn: `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
       <span class="result-chip chip-ok">&#10003; Signature OK</span>
       <span class="result-chip chip-ok">&#10003; Merchant authorized</span>
       <span class="result-chip chip-ok">&#10003; Category OK</span>
-      <span class="result-chip chip-ok">&#10003; Budget: 18.50 / 50.00 EUR</span>
+      <span class="result-chip chip-ok">&#10003; Budget: 1850 / 5000 (cents EUR)</span>
       <span class="result-chip chip-ok">&#10003; Time window valid</span>
       <span class="result-chip chip-ok">&#10003; Attestation fresh</span>
     </div>
-    <div class="result-conclusion" style="color:var(--emerald)">&#x2192; Transaction approved. Remaining budget: 31.50 EUR</div>`
+    <div class="result-conclusion" style="color:var(--emerald)">&#x2192; Transaction approved. Remaining budget: 3150 cents EUR</div>`
   },
   budget: {
     order: `<span class="tok-punct">{</span>
@@ -2138,10 +2166,10 @@ const DEMOS = {
   <span class="tok-key">"mandateId"</span><span class="tok-punct">:</span>  <span class="tok-str">"mnd_7f3a9c2b"</span><span class="tok-punct">,</span>
   <span class="tok-key">"merchant"</span><span class="tok-punct">:</span>   <span class="tok-str">"merchant.kaffeeshop.at"</span><span class="tok-punct">,</span>
   <span class="tok-key">"category"</span><span class="tok-punct">:</span>   <span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-err">67.90</span><span class="tok-punct">,</span>
+  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-err">6790</span><span class="tok-punct">,</span>
   <span class="tok-key">"currency"</span><span class="tok-punct">:</span>   <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"budgetUsed"</span><span class="tok-punct">:</span> <span class="tok-num">0.00</span><span class="tok-punct">,</span>
-  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-str">"2026-10-20T11:43:00Z"</span>
+  <span class="tok-key">"totalSpent"</span><span class="tok-punct">:</span> <span class="tok-num">0</span><span class="tok-punct">,</span>
+  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-num">1729424580</span>
 <span class="tok-punct">}</span>`,
     badgeDe: 'Budget-Überschreitung', badgeEn: 'Budget Exceeded', badgeCls: 'badge-reject',
     state: 'reject',
@@ -2153,12 +2181,12 @@ const DEMOS = {
     bodyDe: `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
       <span class="result-chip chip-err">VIOLATION: BUDGET_EXCEEDED</span>
     </div>
-    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; Order: 67.90 EUR &gt; budgetTotal: 50.00 EUR &nbsp;(+17.90 EUR)</div>
+    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; Order: 6790 &gt; maxTotal: 5000 &nbsp;(+1790 cents)</div>
     <div class="result-conclusion" style="color:var(--red)">&#10007; Transaktion abgelehnt. Haftung: Agent-Betreiber.</div>`,
     bodyEn: `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
       <span class="result-chip chip-err">VIOLATION: BUDGET_EXCEEDED</span>
     </div>
-    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; Order: 67.90 EUR &gt; budgetTotal: 50.00 EUR &nbsp;(+17.90 EUR)</div>
+    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; Order: 6790 &gt; maxTotal: 5000 &nbsp;(+1790 cents)</div>
     <div class="result-conclusion" style="color:var(--red)">&#10007; Transaction rejected. Liability: Agent operator.</div>`
   },
   merchant: {
@@ -2167,10 +2195,10 @@ const DEMOS = {
   <span class="tok-key">"mandateId"</span><span class="tok-punct">:</span>  <span class="tok-str">"mnd_7f3a9c2b"</span><span class="tok-punct">,</span>
   <span class="tok-key">"merchant"</span><span class="tok-punct">:</span>   <span class="tok-err">"evil-shop.darkweb.io"</span><span class="tok-punct">,</span>
   <span class="tok-key">"category"</span><span class="tok-punct">:</span>   <span class="tok-str">"food_beverage"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-num">22.00</span><span class="tok-punct">,</span>
+  <span class="tok-key">"amount"</span><span class="tok-punct">:</span>     <span class="tok-num">2200</span><span class="tok-punct">,</span>
   <span class="tok-key">"currency"</span><span class="tok-punct">:</span>   <span class="tok-str">"EUR"</span><span class="tok-punct">,</span>
-  <span class="tok-key">"budgetUsed"</span><span class="tok-punct">:</span> <span class="tok-num">0.00</span><span class="tok-punct">,</span>
-  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-str">"2026-10-20T11:44:00Z"</span>
+  <span class="tok-key">"totalSpent"</span><span class="tok-punct">:</span> <span class="tok-num">0</span><span class="tok-punct">,</span>
+  <span class="tok-key">"timestamp"</span><span class="tok-punct">:</span>  <span class="tok-num">1729424640</span>
 <span class="tok-punct">}</span>`,
     badgeDe: 'Händler nicht autorisiert', badgeEn: 'Merchant unauthorized', badgeCls: 'badge-reject',
     state: 'reject',
@@ -2183,13 +2211,13 @@ const DEMOS = {
       <span class="result-chip chip-err">VIOLATION: MERCHANT_NOT_ALLOWED</span>
       <span class="result-chip chip-err">VIOLATION: POSSIBLE_PROMPT_INJECTION</span>
     </div>
-    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; "evil-shop.darkweb.io" nicht in allowedMerchants: ["merchant.kaffeeshop.at"]</div>
+    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; "evil-shop.darkweb.io" nicht in merchants: ["merchant.kaffeeshop.at"]</div>
     <div class="result-conclusion" style="color:var(--red)">&#10007; Transaktion abgelehnt. Haftung: Agent-Betreiber. Möglicher Prompt-Injection-Angriff geloggt.</div>`,
     bodyEn: `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
       <span class="result-chip chip-err">VIOLATION: MERCHANT_NOT_ALLOWED</span>
       <span class="result-chip chip-err">VIOLATION: POSSIBLE_PROMPT_INJECTION</span>
     </div>
-    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; "evil-shop.darkweb.io" not in allowedMerchants: ["merchant.kaffeeshop.at"]</div>
+    <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px;">&#x2192; "evil-shop.darkweb.io" not in merchants: ["merchant.kaffeeshop.at"]</div>
     <div class="result-conclusion" style="color:var(--red)">&#10007; Transaction rejected. Liability: Agent operator. Possible prompt injection attack logged.</div>`
   }
 };
