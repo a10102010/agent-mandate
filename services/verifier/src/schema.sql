@@ -7,9 +7,11 @@ CREATE TABLE IF NOT EXISTS nonces (
 );
 
 CREATE TABLE IF NOT EXISTS ledger (
-  mandate_id TEXT PRIMARY KEY,
-  spent      BIGINT NOT NULL DEFAULT 0,
-  orders     INT NOT NULL DEFAULT 0
+  mandate_id       TEXT PRIMARY KEY,
+  spent            BIGINT NOT NULL DEFAULT 0,
+  orders           INT NOT NULL DEFAULT 0,
+  principal_pubkey TEXT,
+  revoked_at       TIMESTAMPTZ NULL
 );
 
 CREATE TABLE IF NOT EXISTS verdicts (
@@ -23,6 +25,8 @@ CREATE TABLE IF NOT EXISTS verdicts (
   liability         TEXT NOT NULL CHECK (liability IN ('PRINCIPAL', 'AGENT_PROVIDER', 'NONE')),
   violations        JSONB NOT NULL DEFAULT '[]',
   remaining_budget  BIGINT,
+  verdict_signature TEXT,
+  verifier_pubkey   TEXT,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

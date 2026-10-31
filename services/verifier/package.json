@@ -9,14 +9,16 @@
   },
   "dependencies": {
     "agent-mandate-sdk": "file:../../sdk",
+    "bs58": "^6.0.0",
     "express": "^4.21.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "tsx": "^4.19.0",
-    "@types/node": "^20.14.0",
     "@types/express": "^4.17.21",
-    "@types/pg": "^8.11.0"
+    "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
   }
 }

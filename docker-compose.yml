@@ -32,6 +32,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${PG_USER:-mandate}:${PG_PASSWORD}@postgres:5432/${PG_DB:-mandate}
       PORT: "3200"
+      VERIFIER_SECRET_KEY: "2skBxmgEPSynCSr9nDkSLJw7i3Fofsw3rtiULwV2o5uKNageM4USe8CY47DqnoF8Zp477WwPEGaFmK2w6Pqy5YVr"
     ports:
       - "127.0.0.1:3200:3200"
     healthcheck:

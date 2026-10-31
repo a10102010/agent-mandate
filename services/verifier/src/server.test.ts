@@ -6,6 +6,9 @@ import {
   signCart,
   attestOrder,
   hashCanonicalHex,
+  canonicalize,
+  signEd25519,
+  signatureToBase58,
   type Order,
   type Mandate,
 } from 'agent-mandate-sdk';
@@ -111,6 +114,47 @@ describe('verifier: POST /verify (in-memory fallback)', () => {
     const res = await fetch(`http://127.0.0.1:${port}/health`);
     const data = await res.json() as any;
     assert.equal(data.status, 'ok');
+  });
+
+  it('revoke endpoint rejects missing fields', async () => {
+    const res = await fetch(`http://127.0.0.1:${port}/mandates/test-123/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const data = await res.json() as any;
+    assert.equal(res.status, 400);
+    assert.ok(data.error.includes('Missing'));
+  });
+
+  it('revoke endpoint rejects missing principalPubkey', async () => {
+    const res = await fetch(`http://127.0.0.1:${port}/mandates/test-123/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mandateHash: 'abc', signature: 'def' }),
+    });
+    const data = await res.json() as any;
+    assert.equal(res.status, 400);
+    assert.equal(data.error, 'Missing principalPubkey');
+  });
+
+  it('revoke endpoint rejects missing ts', async () => {
+    const res = await fetch(`http://127.0.0.1:${port}/mandates/test-123/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mandateHash: 'abc', signature: 'def', principalPubkey: 'xyz' }),
+    });
+    const data = await res.json() as any;
+    assert.equal(res.status, 400);
+    assert.equal(data.error, 'Missing ts (timestamp)');
+  });
+
+  it('verifier pubkey returns 404 when no key configured', async () => {
+    const res = await fetch(`http://127.0.0.1:${port}/verifier/pubkey`);
+    // Without VERIFIER_SECRET_KEY env var, should return 404
+    const data = await res.json() as any;
+    assert.equal(res.status, 404);
+    assert.equal(data.error, 'No verifier key configured');
   });
 
   it('teardown', () => { server.close(); });

@@ -2,6 +2,8 @@
  * Mandate Clearing Verifier Service
  *
  * POST /verify — atomic verify-and-record (lock → verify → write)
+ * POST /mandates/:mandateId/revoke — revoke a mandate (principal-signed)
+ * GET /verifier/pubkey — return verifier's Ed25519 public key
  * GET /verdicts/:id — retrieve a verdict
  * GET /agents/:pubkey/reputation — agent reputation (30d)
  */
@@ -35,10 +37,10 @@ app.post('/verify', async (req, res) => {
 
     // Try Postgres (atomic verifyAndRecord)
     try {
-      const { verdictId, result } = await store.verifyAndRecord(
+      const { verdictId, result, verdictSignature, verifierPubkey } = await store.verifyAndRecord(
         signedMandate, signedOrder, signedAttestation, now,
       );
-      return res.status(result.decision === 'APPROVE' ? 200 : 402).json({ verdictId, ...result });
+      return res.status(result.decision === 'APPROVE' ? 200 : 402).json({ verdictId, ...result, verdictSignature, verifierPubkey });
     } catch {
       // Fallback: in-memory (for unit tests without Postgres)
       const mandateId = signedMandate.mandate.mandateId;
@@ -63,6 +65,39 @@ app.post('/verify', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Verification failed', detail: (err as Error).message });
   }
+});
+
+app.post('/mandates/:mandateId/revoke', async (req, res) => {
+  try {
+    const { mandateId } = req.params;
+    const { mandateHash, signature, principalPubkey, ts } = req.body;
+
+    if (!mandateHash || !signature) {
+      return res.status(400).json({ error: 'Missing mandateHash or signature' });
+    }
+    if (!principalPubkey) {
+      return res.status(400).json({ error: 'Missing principalPubkey' });
+    }
+    if (!ts) {
+      return res.status(400).json({ error: 'Missing ts (timestamp)' });
+    }
+
+    const result = await store.revokeMandate(mandateId, principalPubkey, signature, mandateHash, ts);
+    res.json(result);
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === 'Invalid signature') return res.status(401).json({ error: msg });
+    if (msg === 'Principal pubkey mismatch') return res.status(403).json({ error: msg });
+    if (msg === 'Already revoked') return res.status(409).json({ error: msg });
+    if (msg === 'Mandate not found') return res.status(404).json({ error: msg });
+    res.status(500).json({ error: msg });
+  }
+});
+
+app.get('/verifier/pubkey', (_req, res) => {
+  const pubkey = store.getVerifierPubkey();
+  if (!pubkey) return res.status(404).json({ error: 'No verifier key configured' });
+  res.json({ pubkey, scheme: 'ed25519' });
 });
 
 app.get('/verdicts/:id', async (req, res) => {

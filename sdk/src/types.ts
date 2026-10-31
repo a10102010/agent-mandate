@@ -114,7 +114,8 @@ export type ViolationCode =
   | 'ITEM_PRICE_EXCEEDED'
   | 'ORDER_LIMIT_EXCEEDED'
   | 'BUDGET_EXCEEDED'
-  | 'ORDER_COUNT_EXCEEDED';
+  | 'ORDER_COUNT_EXCEEDED'
+  | 'MANDATE_REVOKED';
 
 export interface Violation {
   code: ViolationCode;
