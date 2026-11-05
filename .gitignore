@@ -7,3 +7,6 @@ test-ledger/
 *.d.ts
 _vendor/
 .env
+deploy-devnet.json
+*.keypair
+~/.fivefield/
