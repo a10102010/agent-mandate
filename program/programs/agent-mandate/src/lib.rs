@@ -211,9 +211,15 @@ pub mod agent_mandate {
         require!(ed_data.len() >= ED25519_HEADER_SIZE, MandateError::Ed25519BadIndex);
 
         let num_signatures = ed_data[0];
-        require!(num_signatures == 2, MandateError::Ed25519SigCount);
+        // Accept 1 (agent only) or 2 (agent + merchant cart) signatures.
+        // With 1 signature the verdict is marked cart_signed=false so consumers
+        // know the category claim is agent-asserted, not merchant-confirmed.
+        require!(
+            num_signatures >= 1 && num_signatures <= 2,
+            MandateError::Ed25519SigCount
+        );
 
-        // ── Parse signature 0: Agent attestation ──
+        // ── Parse signature 0: Agent attestation (always required) ──
         let (agent_pk_bytes, _agent_sig, agent_msg) = parse_ed25519_entry(ed_data, 0)?;
 
         // Pubkey must match mandate.agent.
@@ -237,29 +243,35 @@ pub mod agent_mandate {
             MandateError::Ed25519MessageMismatch
         );
 
-        // ── Parse signature 1: Merchant cart signature ──
-        let (merchant_pk_bytes, _merchant_sig, merchant_msg) = parse_ed25519_entry(ed_data, 1)?;
+        // ── Parse signature 1: Merchant cart signature (optional) ──
+        let cart_signed = if num_signatures >= 2 {
+            let (merchant_pk_bytes, _merchant_sig, merchant_msg) = parse_ed25519_entry(ed_data, 1)?;
 
-        // Pubkey must match the merchant account passed to clear.
-        require!(
-            merchant_pk_bytes == ctx.accounts.merchant.key().to_bytes(),
-            MandateError::Ed25519PubkeyMismatch
-        );
+            // Pubkey must match the merchant account passed to clear.
+            require!(
+                merchant_pk_bytes == ctx.accounts.merchant.key().to_bytes(),
+                MandateError::Ed25519PubkeyMismatch
+            );
 
-        // Reconstruct expected merchant cart message with domain prefix:
-        // "mandate-clearing/cart/v1" || mandate_hash || order_hash || cart_hash || trace_hash || timestamp_le
-        let expected_merchant_msg = build_expected_message_with_prefix(
-            CART_PREFIX,
-            &mandate_hash,
-            &order_hash,
-            &cart_hash,
-            &trace_hash,
-            sig_timestamp,
-        );
-        require!(
-            merchant_msg == expected_merchant_msg.as_slice(),
-            MandateError::Ed25519MessageMismatch
-        );
+            // Reconstruct expected merchant cart message with domain prefix:
+            let expected_merchant_msg = build_expected_message_with_prefix(
+                CART_PREFIX,
+                &mandate_hash,
+                &order_hash,
+                &cart_hash,
+                &trace_hash,
+                sig_timestamp,
+            );
+            require!(
+                merchant_msg == expected_merchant_msg.as_slice(),
+                MandateError::Ed25519MessageMismatch
+            );
+            true
+        } else {
+            // No cart signature — category is agent-asserted only.
+            // Verdict will record cart_signed=false.
+            false
+        };
 
         // ── Agent account check (belt-and-suspenders) ──
         require!(
@@ -359,6 +371,7 @@ pub mod agent_mandate {
         verdict.mandate = mandate_key;
         verdict.decision = VerdictDecision::Approved;
         verdict.timestamp = now;
+        verdict.cart_signed = cart_signed;
         verdict.bump = ctx.bumps.verdict;
 
         // ── Update Reputation PDA ──
@@ -685,11 +698,14 @@ pub struct VerdictAccount {
     pub mandate: Pubkey,
     pub decision: VerdictDecision,
     pub timestamp: i64,
+    /// true if the merchant cart signature was verified on-chain.
+    /// false means the category claim is agent-asserted only.
+    pub cart_signed: bool,
     pub bump: u8,
 }
 
 impl VerdictAccount {
-    pub const MAX_SIZE: usize = 32 + 32 + 32 + 1 + 8 + 1;
+    pub const MAX_SIZE: usize = 32 + 32 + 32 + 1 + 8 + 1 + 1;
 }
 
 #[account]
@@ -798,7 +814,7 @@ pub enum MandateError {
     Ed25519PubkeyMismatch,
     #[msg("Ed25519 message does not match reconstructed")]
     Ed25519MessageMismatch,
-    #[msg("Ed25519 precompile must contain exactly 2 signatures")]
+    #[msg("Ed25519 precompile must contain 1 or 2 signatures")]
     Ed25519SigCount,
     #[msg("clear must not be called via CPI")]
     CpiNotAllowed,

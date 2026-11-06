@@ -32,6 +32,14 @@ The `settle` instruction holds funds until the dispute window passes.
 `release` only works after the dispute window.
 There is no admin override, no emergency release, no operator backdoor.
 
+On-chain `clear` accepts 1 (agent only) or 2 (agent + merchant cart) Ed25519 signatures.
+With 1 signature, the category is an agent assertion — the merchant did not co-sign.
+The verdict PDA records `cart_signed: bool` so consumers know which mode was used.
+Merchant, amount, and budget are verified by the program regardless of cart signature.
+The hosted verifier (off-chain) continues to require the cart signature (CART_SIG_INVALID).
+Rationale: dual Ed25519 + 14 instruction args exceed the Solana 1232-byte TX limit;
+the prepare_order PDA pattern (Issue #1) is the long-term fix.
+
 ## Invariant 5: Liability assignment follows mandate-scope-v1
 
 | Condition | Decision | Liability |

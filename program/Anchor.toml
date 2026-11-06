@@ -7,9 +7,12 @@ skip-lint = false
 [programs.localnet]
 agent_mandate = "EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV"
 
+[programs.devnet]
+agent_mandate = "EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV"
+
 [provider]
-cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "~/.fivefield/deploy-devnet.json"
 
 [scripts]
 test = "npx tsx node_modules/.bin/mocha -t 1000000 tests/**/*.ts"

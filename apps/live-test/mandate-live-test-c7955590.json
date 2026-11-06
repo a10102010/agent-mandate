@@ -1,0 +1,35 @@
+{
+  "mandate": {
+    "version": "1",
+    "mandateId": "live-test-c7955590",
+    "principal": {
+      "scheme": "ed25519",
+      "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt"
+    },
+    "agent": {
+      "id": "live-test-agent",
+      "scheme": "ed25519",
+      "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E"
+    },
+    "constraints": {
+      "currency": "USD",
+      "maxTotal": 10000000,
+      "maxPerOrder": 5000000,
+      "categories": [
+        "api_credits"
+      ],
+      "merchants": [
+        "north7.ai"
+      ]
+    },
+    "validFrom": 0,
+    "validUntil": 1794588165,
+    "nonce": "c7955590c7181b0d970463fe7cb498f7",
+    "policy": {
+      "liabilityModel": "mandate-scope-v1",
+      "disputeWindowSec": 60
+    }
+  },
+  "signature": "Kfc/4KFWyeo52YPlfhcPDx2XLfG5hvIFSriA5MzveKo/4UhGUzFAsWUpo0ZfkXoKJ/w9Yv+2RI0K0sDtu1ccCQ==",
+  "mandateHash": "04a7b785f1df5f78680fccf4d1ceb51b0f6c99b3eeb896726e8fcab58b175fbd"
+}

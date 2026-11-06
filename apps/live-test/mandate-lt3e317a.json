@@ -1,0 +1,35 @@
+{
+  "mandate": {
+    "version": "1",
+    "mandateId": "lt3e317a",
+    "principal": {
+      "scheme": "ed25519",
+      "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt"
+    },
+    "agent": {
+      "id": "agt1",
+      "scheme": "ed25519",
+      "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E"
+    },
+    "constraints": {
+      "currency": "USD",
+      "maxTotal": 10000000,
+      "maxPerOrder": 5000000,
+      "categories": [
+        "api_credits"
+      ],
+      "merchants": [
+        "north7.ai"
+      ]
+    },
+    "validFrom": 0,
+    "validUntil": 1794589999,
+    "nonce": "3e317a143f2e03ff03c1db723466c4f7",
+    "policy": {
+      "liabilityModel": "mandate-scope-v1",
+      "disputeWindowSec": 60
+    }
+  },
+  "signature": "bfyUfHh2PBOPP0ezSVmFosjcpqGbAiXtHVu2+vua2EWUIdJSXVXxaBeHmEdOtFRD1rbnuNzyw8u/3zjyr3N8BA==",
+  "mandateHash": "b9159022f440a2759f0e2c4cdf78b9fb3e16ee81aeac35d234bc88b70fe6a1cb"
+}
