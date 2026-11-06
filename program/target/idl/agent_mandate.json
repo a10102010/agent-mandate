@@ -1,0 +1,1129 @@
+{
+  "address": "EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV",
+  "metadata": {
+    "name": "agentMandate",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Signed mandate for AI agent purchases \u2014 on-chain verifier with escrow"
+  },
+  "instructions": [
+    {
+      "name": "clear",
+      "docs": [
+        "Agent submits an order for clearing. Verifies signatures via Ed25519",
+        "precompile (instruction introspection), checks scope, creates Verdict PDA.",
+        "",
+        "Requires an Ed25519 precompile instruction at index = (clear_index - 1)",
+        "containing exactly TWO signatures:",
+        "0: Agent attestation (pubkey = mandate.agent)",
+        "1: Merchant cart signature (pubkey = merchant account)",
+        "",
+        "Each signature's message is reconstructed on-chain from the clear args",
+        "and compared byte-by-byte with the precompile data."
+      ],
+      "discriminator": [
+        250,
+        39,
+        28,
+        213,
+        123,
+        163,
+        133,
+        5
+      ],
+      "accounts": [
+        {
+          "name": "agent",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "merchant"
+        },
+        {
+          "name": "mandate",
+          "writable": true
+        },
+        {
+          "name": "verdict",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  101,
+                  114,
+                  100,
+                  105,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mandate"
+              },
+              {
+                "kind": "arg",
+                "path": "orderHash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reputation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  112,
+                  117,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "agent"
+              }
+            ]
+          }
+        },
+        {
+          "name": "instructionsSysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "orderHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "attestationHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "orderTotal",
+          "type": "u64"
+        },
+        {
+          "name": "itemPrices",
+          "type": {
+            "vec": "u64"
+          }
+        },
+        {
+          "name": "itemQuantities",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "itemCategories",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "itemSkus",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchantHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "orderCurrency",
+          "type": "string"
+        },
+        {
+          "name": "cartHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "traceHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "mandateHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "sigTimestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "createMandate",
+      "docs": [
+        "Principal creates a mandate with constraints and optional escrow."
+      ],
+      "discriminator": [
+        230,
+        170,
+        158,
+        68,
+        33,
+        169,
+        16,
+        158
+      ],
+      "accounts": [
+        {
+          "name": "principal",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "agent"
+        },
+        {
+          "name": "mandate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  110,
+                  100,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "principal"
+              },
+              {
+                "kind": "arg",
+                "path": "mandateId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "principalToken",
+          "docs": [
+            "Optional: principal's token account for escrow funding"
+          ],
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "escrowToken",
+          "docs": [
+            "Optional: escrow token account (PDA-owned)"
+          ],
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "mandateId",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "maxTotal",
+          "type": "u64"
+        },
+        {
+          "name": "maxPerOrder",
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "maxPerItem",
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "maxOrders",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "categories",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchants",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "skus",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "validFrom",
+          "type": "i64"
+        },
+        {
+          "name": "validUntil",
+          "type": "i64"
+        },
+        {
+          "name": "disputeWindowSec",
+          "type": "i64"
+        },
+        {
+          "name": "escrowAmount",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dispute",
+      "docs": [
+        "Principal disputes within the dispute window."
+      ],
+      "discriminator": [
+        216,
+        92,
+        128,
+        146,
+        202,
+        85,
+        135,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "principal",
+          "signer": true
+        },
+        {
+          "name": "mandate",
+          "writable": true
+        },
+        {
+          "name": "hold",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "release",
+      "docs": [
+        "Merchant releases held funds after dispute window."
+      ],
+      "discriminator": [
+        253,
+        249,
+        15,
+        206,
+        28,
+        127,
+        193,
+        241
+      ],
+      "accounts": [
+        {
+          "name": "merchant",
+          "signer": true
+        },
+        {
+          "name": "hold",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "resolve",
+      "docs": [
+        "Arbiter resolves a dispute by splitting funds."
+      ],
+      "discriminator": [
+        246,
+        150,
+        236,
+        206,
+        108,
+        63,
+        58,
+        10
+      ],
+      "accounts": [
+        {
+          "name": "arbiter",
+          "signer": true
+        },
+        {
+          "name": "hold",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "principalShare",
+          "type": "u64"
+        },
+        {
+          "name": "merchantShare",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "revoke",
+      "docs": [
+        "Principal revokes the mandate. Remaining escrow returned."
+      ],
+      "discriminator": [
+        170,
+        23,
+        31,
+        34,
+        133,
+        173,
+        93,
+        242
+      ],
+      "accounts": [
+        {
+          "name": "principal",
+          "signer": true
+        },
+        {
+          "name": "mandate",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle",
+      "docs": [
+        "Clear + move escrow funds to a per-order hold account."
+      ],
+      "discriminator": [
+        175,
+        42,
+        185,
+        87,
+        144,
+        131,
+        102,
+        212
+      ],
+      "accounts": [
+        {
+          "name": "agent",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "merchant"
+        },
+        {
+          "name": "mandate",
+          "writable": true
+        },
+        {
+          "name": "hold",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  111,
+                  108,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mandate"
+              },
+              {
+                "kind": "arg",
+                "path": "orderHash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "orderHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "cartSignature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "attestationHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "orderTotal",
+          "type": "u64"
+        },
+        {
+          "name": "itemPrices",
+          "type": {
+            "vec": "u64"
+          }
+        },
+        {
+          "name": "itemQuantities",
+          "type": {
+            "vec": "u32"
+          }
+        },
+        {
+          "name": "itemCategories",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "itemSkus",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "merchantHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "orderCurrency",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "holdAccount",
+      "discriminator": [
+        235,
+        211,
+        184,
+        241,
+        228,
+        100,
+        127,
+        40
+      ]
+    },
+    {
+      "name": "mandateAccount",
+      "discriminator": [
+        93,
+        50,
+        242,
+        30,
+        106,
+        198,
+        146,
+        213
+      ]
+    },
+    {
+      "name": "reputationAccount",
+      "discriminator": [
+        19,
+        185,
+        177,
+        157,
+        34,
+        87,
+        67,
+        233
+      ]
+    },
+    {
+      "name": "verdictAccount",
+      "discriminator": [
+        63,
+        136,
+        110,
+        60,
+        60,
+        252,
+        162,
+        97
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "allowlistTooLarge",
+      "msg": "Allowlist exceeds maximum of 8 entries"
+    },
+    {
+      "code": 6001,
+      "name": "invalidTimeWindow",
+      "msg": "validFrom must be before validUntil"
+    },
+    {
+      "code": 6002,
+      "name": "mandateRevoked",
+      "msg": "Mandate has been revoked"
+    },
+    {
+      "code": 6003,
+      "name": "mandateNotYetValid",
+      "msg": "Mandate is not yet valid"
+    },
+    {
+      "code": 6004,
+      "name": "mandateExpired",
+      "msg": "Mandate has expired"
+    },
+    {
+      "code": 6005,
+      "name": "agentMismatch",
+      "msg": "Agent does not match mandate"
+    },
+    {
+      "code": 6006,
+      "name": "currencyMismatch",
+      "msg": "Currency mismatch"
+    },
+    {
+      "code": 6007,
+      "name": "orderTotalMismatch",
+      "msg": "Order total does not match computed sum"
+    },
+    {
+      "code": 6008,
+      "name": "merchantNotAllowed",
+      "msg": "Merchant not in allowlist"
+    },
+    {
+      "code": 6009,
+      "name": "categoryNotAllowed",
+      "msg": "Category not in allowlist"
+    },
+    {
+      "code": 6010,
+      "name": "skuNotAllowed",
+      "msg": "SKU not in allowlist"
+    },
+    {
+      "code": 6011,
+      "name": "quantityExceeded",
+      "msg": "Item quantity exceeds limit"
+    },
+    {
+      "code": 6012,
+      "name": "itemPriceExceeded",
+      "msg": "Item price exceeds limit"
+    },
+    {
+      "code": 6013,
+      "name": "orderLimitExceeded",
+      "msg": "Order total exceeds per-order limit"
+    },
+    {
+      "code": 6014,
+      "name": "budgetExceeded",
+      "msg": "Total spend would exceed budget"
+    },
+    {
+      "code": 6015,
+      "name": "orderCountExceeded",
+      "msg": "Order count would exceed limit"
+    },
+    {
+      "code": 6016,
+      "name": "overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6017,
+      "name": "holdDisputed",
+      "msg": "Hold is disputed"
+    },
+    {
+      "code": 6018,
+      "name": "holdAlreadyReleased",
+      "msg": "Hold already released"
+    },
+    {
+      "code": 6019,
+      "name": "disputeWindowActive",
+      "msg": "Dispute window still active"
+    },
+    {
+      "code": 6020,
+      "name": "disputeWindowExpired",
+      "msg": "Dispute window has expired"
+    },
+    {
+      "code": 6021,
+      "name": "holdAlreadyDisputed",
+      "msg": "Hold already disputed"
+    },
+    {
+      "code": 6022,
+      "name": "notDisputed",
+      "msg": "Hold not disputed \u2014 cannot resolve"
+    },
+    {
+      "code": 6023,
+      "name": "resolutionAmountMismatch",
+      "msg": "Resolution shares must equal hold amount"
+    },
+    {
+      "code": 6024,
+      "name": "mandateAlreadyRevoked",
+      "msg": "Mandate already revoked"
+    },
+    {
+      "code": 6025,
+      "name": "merchantMismatch",
+      "msg": "Merchant mismatch"
+    },
+    {
+      "code": 6026,
+      "name": "holdMandateMismatch",
+      "msg": "Hold mandate mismatch"
+    },
+    {
+      "code": 6027,
+      "name": "principalMismatch",
+      "msg": "Principal mismatch"
+    },
+    {
+      "code": 6028,
+      "name": "ed25519Missing",
+      "msg": "Ed25519 precompile instruction missing"
+    },
+    {
+      "code": 6029,
+      "name": "ed25519WrongProgram",
+      "msg": "Instruction is not from the Ed25519 program"
+    },
+    {
+      "code": 6030,
+      "name": "ed25519BadIndex",
+      "msg": "Ed25519 data offset/index out of bounds"
+    },
+    {
+      "code": 6031,
+      "name": "ed25519PubkeyMismatch",
+      "msg": "Ed25519 pubkey does not match expected"
+    },
+    {
+      "code": 6032,
+      "name": "ed25519MessageMismatch",
+      "msg": "Ed25519 message does not match reconstructed"
+    },
+    {
+      "code": 6033,
+      "name": "ed25519SigCount",
+      "msg": "Ed25519 precompile must contain 1 or 2 signatures"
+    },
+    {
+      "code": 6034,
+      "name": "cpiNotAllowed",
+      "msg": "clear must not be called via CPI"
+    }
+  ],
+  "types": [
+    {
+      "name": "holdAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mandate",
+            "type": "pubkey"
+          },
+          {
+            "name": "orderHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "disputeWindowSec",
+            "type": "i64"
+          },
+          {
+            "name": "released",
+            "type": "bool"
+          },
+          {
+            "name": "disputed",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "mandateAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "principal",
+            "type": "pubkey"
+          },
+          {
+            "name": "agent",
+            "type": "pubkey"
+          },
+          {
+            "name": "mandateId",
+            "type": "string"
+          },
+          {
+            "name": "currency",
+            "type": "string"
+          },
+          {
+            "name": "maxTotal",
+            "type": "u64"
+          },
+          {
+            "name": "maxPerOrder",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "maxPerItem",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "maxQuantity",
+            "type": {
+              "option": "u32"
+            }
+          },
+          {
+            "name": "maxOrders",
+            "type": {
+              "option": "u32"
+            }
+          },
+          {
+            "name": "categories",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "merchants",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "skus",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          },
+          {
+            "name": "validFrom",
+            "type": "i64"
+          },
+          {
+            "name": "validUntil",
+            "type": "i64"
+          },
+          {
+            "name": "disputeWindowSec",
+            "type": "i64"
+          },
+          {
+            "name": "escrowAmount",
+            "type": "u64"
+          },
+          {
+            "name": "spent",
+            "type": "u64"
+          },
+          {
+            "name": "orderCount",
+            "type": "u32"
+          },
+          {
+            "name": "revoked",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reputationAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "agent",
+            "type": "pubkey"
+          },
+          {
+            "name": "approved",
+            "type": "u64"
+          },
+          {
+            "name": "rejected",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "verdictAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attestationHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "orderHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "mandate",
+            "type": "pubkey"
+          },
+          {
+            "name": "decision",
+            "type": {
+              "defined": {
+                "name": "verdictDecision"
+              }
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "cartSigned",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "verdictDecision",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "approved"
+          },
+          {
+            "name": "rejected"
+          }
+        ]
+      }
+    }
+  ]
+}
