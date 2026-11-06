@@ -607,9 +607,9 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
   });
 
   // ────────────────────────────────────────────────────────
-  // Test 6: Only one signature instead of two
+  // Test 6: Single signature (agent only) → succeeds with cart_signed=false
   // ────────────────────────────────────────────────────────
-  it("6. rejects clear when Ed25519 precompile has only 1 signature", async () => {
+  it("6. accepts clear with 1 Ed25519 signature (agent only), verdict has cart_signed=false", async () => {
     const orderHash = orderHashFor("attack-one-sig");
     const attestationHash = sha256("att-one-sig");
 
@@ -628,16 +628,55 @@ describe("clear instruction — Ed25519 introspection attack vectors", () => {
     ).blockhash;
     tx.sign(correctAgent);
 
+    const sig = await provider.connection.sendRawTransaction(tx.serialize());
+    await provider.connection.confirmTransaction(sig, "confirmed");
+
+    // Verify verdict exists with cart_signed=false
+    const [verdictPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("verdict"), mandatePda.toBuffer(), Buffer.from(orderHash)],
+      program.programId
+    );
+    const verdict = await program.account.verdictAccount.fetch(verdictPda);
+    expect(verdict.mandate.toBase58()).to.equal(mandatePda.toBase58());
+    expect((verdict.decision as any).approved).to.not.be.undefined;
+    expect(verdict.cartSigned).to.equal(false);
+  });
+
+  // ────────────────────────────────────────────────────────
+  // Test 6b: Dual signature with FAKE cart sig → must fail
+  // ────────────────────────────────────────────────────────
+  it("6b. rejects clear when cart signature is from wrong key", async () => {
+    const orderHash = orderHashFor("attack-fake-cart");
+    const attestationHash = sha256("att-fake-cart");
+    const fakeKey = Keypair.generate();
+
+    const agentMsg = buildMessage(mandateHashArr, orderHash, attestationHash, traceHash, sigTimestamp, ATTESTATION_PREFIX);
+    const merchantMsg = buildMessage(mandateHashArr, orderHash, sha256("cart-fake"), traceHash, sigTimestamp, CART_PREFIX);
+    // Sign cart with WRONG key (fakeKey instead of merchant)
+    const ed25519Ix = buildDualEd25519Ix(correctAgent, agentMsg, fakeKey, merchantMsg);
+
+    const clearIx = await buildClearIx(orderHash, correctAgent, attestationHash);
+
+    const tx = new Transaction();
+    tx.add(ed25519Ix);
+    tx.add(clearIx);
+
+    tx.feePayer = correctAgent.publicKey;
+    tx.recentBlockhash = (
+      await provider.connection.getLatestBlockhash()
+    ).blockhash;
+    tx.sign(correctAgent);
+
     try {
       const sig = await provider.connection.sendRawTransaction(tx.serialize());
       await provider.connection.confirmTransaction(sig, "confirmed");
-      expect.fail("Should have failed — only 1 signature");
+      expect.fail("Should have failed — fake cart signature");
     } catch (err: any) {
       const errMsg = err.toString();
       expect(errMsg).to.satisfy(
         (msg: string) =>
-          msg.includes("Ed25519SigCount") ||
-          msg.includes("ed25519_sig_count") ||
+          msg.includes("Ed25519PubkeyMismatch") ||
+          msg.includes("ed25519_pubkey_mismatch") ||
           msg.includes("custom program error") ||
           msg.includes("0x"),
         `Unexpected error: ${errMsg}`

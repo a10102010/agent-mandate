@@ -1,0 +1,159 @@
+{
+  "meta": {
+    "title": "Fivefield Protocol — Devnet Live Test Evidence",
+    "date": "2026-11-06",
+    "cluster": "devnet",
+    "programId": "EKRPj4JfLPuBWuqVmC1bA3S4Z7PdR4gAzdqUk36Xt1zV",
+    "tUsdcMint": "ECoy3RJja5kkpDpA7Ue6mLzVsAovxhWKP5AiBW5fKh9g"
+  },
+  "participants": {
+    "principal": {
+      "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt",
+      "scheme": "ed25519"
+    },
+    "agent": {
+      "id": "agt1",
+      "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E",
+      "scheme": "ed25519"
+    },
+    "merchant": {
+      "pubkey": "HS2PFef9ortmAPRViCPMHQkhaFQsmcCt1YSYfCz8j3nB"
+    }
+  },
+  "runs": [
+    {
+      "run": 1,
+      "mandateId": "lt80719d",
+      "mandateFile": "apps/live-test/mandate-lt80719d.json",
+      "mandate": {
+        "version": "1",
+        "mandateId": "lt80719d",
+        "principal": {
+          "scheme": "ed25519",
+          "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt"
+        },
+        "agent": {
+          "id": "agt1",
+          "scheme": "ed25519",
+          "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E"
+        },
+        "constraints": {
+          "currency": "USD",
+          "maxTotal": 10000000,
+          "maxPerOrder": 5000000,
+          "categories": ["api_credits"],
+          "merchants": ["north7.ai"]
+        },
+        "validFrom": 0,
+        "validUntil": 1794589911,
+        "nonce": "80719d4fc9f71a047578a9cc0041d344",
+        "policy": {
+          "liabilityModel": "mandate-scope-v1",
+          "disputeWindowSec": 60
+        }
+      },
+      "mandateHash": "3920d853bbc690c66c148244ff10d060c966e5875062f84c11fa153539b4b29a",
+      "mandateSignature": "GV9EIQSJLw/q22K9NG9o30M0NuVzXF3xvildqL6H2ZY7/UwaqwZxU9UhYdv6+d+RfALoevA358+hjrJQ+FJXCw==",
+      "pdas": {
+        "mandate": "EJsFzCmSy6Yc7G2bhEhrhHE7ATq4oQ72BU7szAKEcvT4",
+        "verdict": "Hmc7Vbp8MUM7J1uzWzDshER69Z8K1asfWfPT3FzcuTwP"
+      },
+      "transactions": {
+        "create_mandate": {
+          "signature": "5QNh36qFbfmYja8SN6rXVgj48txdW5qincoZ7H24AbZkDJYshJ3cjyn4HQLRrAW6vPmcitgSy7BCF5nQSp5dJLfY",
+          "explorer": "https://explorer.solana.com/tx/5QNh36qFbfmYja8SN6rXVgj48txdW5qincoZ7H24AbZkDJYshJ3cjyn4HQLRrAW6vPmcitgSy7BCF5nQSp5dJLfY?cluster=devnet"
+        },
+        "clear": {
+          "signature": "4UPt3LisTPZ3KyBV1S7RBG3j1QqXJjwoHPdESVCmuKPVKv2DkJHNbF3Kw3cMMKdsvmeWEmAVQbRNTejGQNPK1fqm",
+          "explorer": "https://explorer.solana.com/tx/4UPt3LisTPZ3KyBV1S7RBG3j1QqXJjwoHPdESVCmuKPVKv2DkJHNbF3Kw3cMMKdsvmeWEmAVQbRNTejGQNPK1fqm?cluster=devnet"
+        },
+        "settle": {
+          "signature": "2i98K77HE1ixdH2CwTHKbJM6GWpCctvshLCypeXvjAMAjwyqFVrum4hvkSQQoibdBA8ffbtqWBHJhYUvw4pZsx2i",
+          "explorer": "https://explorer.solana.com/tx/2i98K77HE1ixdH2CwTHKbJM6GWpCctvshLCypeXvjAMAjwyqFVrum4hvkSQQoibdBA8ffbtqWBHJhYUvw4pZsx2i?cluster=devnet"
+        }
+      }
+    },
+    {
+      "run": 2,
+      "mandateId": "lt95f795",
+      "mandateFile": "apps/live-test/mandate-lt95f795.json",
+      "mandate": {
+        "version": "1",
+        "mandateId": "lt95f795",
+        "principal": {
+          "scheme": "ed25519",
+          "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt"
+        },
+        "agent": {
+          "id": "agt1",
+          "scheme": "ed25519",
+          "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E"
+        },
+        "constraints": {
+          "currency": "USD",
+          "maxTotal": 10000000,
+          "maxPerOrder": 5000000,
+          "categories": ["api_credits"],
+          "merchants": ["north7.ai"]
+        },
+        "validFrom": 0,
+        "validUntil": 1794589986,
+        "nonce": "95f795cc4d97213157f98b30e59e7024",
+        "policy": {
+          "liabilityModel": "mandate-scope-v1",
+          "disputeWindowSec": 60
+        }
+      },
+      "mandateHash": "1efc8020805222c0c0802749507905a4c3c1e15a7e836c8d001e319d92857b26",
+      "mandateSignature": "nK4xhrBhIVWkIzH+fT3hBIJKJoRZyiI+sBiN2Qg6JqACYgYsuNwRpwXyytClPGbyPAEnG9BGfWjjMa9MtMLJBg==",
+      "pdas": {
+        "mandate": null,
+        "verdict": null
+      },
+      "transactions": {
+        "note": "TX signatures available in run output"
+      }
+    },
+    {
+      "run": 3,
+      "mandateId": "lt3e317a",
+      "mandateFile": "apps/live-test/mandate-lt3e317a.json",
+      "mandate": {
+        "version": "1",
+        "mandateId": "lt3e317a",
+        "principal": {
+          "scheme": "ed25519",
+          "pubkey": "Hpcf1Ev88fRW2SvNzZBGoSw42W3DxYM9x7nchocCEhdt"
+        },
+        "agent": {
+          "id": "agt1",
+          "scheme": "ed25519",
+          "pubkey": "71eFCYS49TxDQmtzUV2mpMgj5s8PpsCF2CXprZsTSJ3E"
+        },
+        "constraints": {
+          "currency": "USD",
+          "maxTotal": 10000000,
+          "maxPerOrder": 5000000,
+          "categories": ["api_credits"],
+          "merchants": ["north7.ai"]
+        },
+        "validFrom": 0,
+        "validUntil": 1794589999,
+        "nonce": "3e317a143f2e03ff03c1db723466c4f7",
+        "policy": {
+          "liabilityModel": "mandate-scope-v1",
+          "disputeWindowSec": 60
+        }
+      },
+      "mandateHash": "b9159022f440a2759f0e2c4cdf78b9fb3e16ee81aeac35d234bc88b70fe6a1cb",
+      "mandateSignature": "bfyUfHh2PBOPP0ezSVmFosjcpqGbAiXtHVu2+vua2EWUIdJSXVXxaBeHmEdOtFRD1rbnuNzyw8u/3zjyr3N8BA==",
+      "pdas": {
+        "mandate": null,
+        "verdict": null
+      },
+      "transactions": {
+        "note": "TX signatures available in run output"
+      }
+    }
+  ]
+}

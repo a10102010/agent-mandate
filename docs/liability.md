@@ -121,5 +121,8 @@ PSD3/PSR technical standards are in drafting. Whether a cryptographic mandate qu
 ### Enforcement against agent providers outside the EU
 The per-transaction signature provides evidence of acceptance regardless of jurisdiction. However, enforcing a liability claim against an agent provider incorporated outside the EU may require cross-border litigation. The cryptographic evidence (signed attestation referencing the liability model) is jurisdiction-neutral; the enforcement mechanism is not.
 
+### Cart signature (on-chain vs off-chain)
+On-chain without a cart signature, the category is an agent assertion — merchant and amount are still verified by the program. The verdict records `cart_signed: bool`. The hosted verifier (off-chain) continues to require the cart signature. This means on-chain verdicts with `cart_signed: false` have slightly weaker evidentiary value for category disputes: the merchant did not co-sign the cart, so the category claim rests solely on the agent's attestation. Merchant identity and amount remain program-verified regardless.
+
 ### Revocation
 The protocol supports mandate revocation and attestation replay detection. What remains open is real-time revocation propagation across all payment rails — particularly for card transactions already in the authorization pipeline when revocation occurs.

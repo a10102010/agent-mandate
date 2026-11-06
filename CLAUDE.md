@@ -39,6 +39,7 @@ Merchant, amount, and budget are verified by the program regardless of cart sign
 The hosted verifier (off-chain) continues to require the cart signature (CART_SIG_INVALID).
 Rationale: dual Ed25519 + 14 instruction args exceed the Solana 1232-byte TX limit;
 the prepare_order PDA pattern (Issue #1) is the long-term fix.
+Note: The 20 localnet tests ran with elevated TX-size limits. All 3 Devnet runs (2026-11-06) passed within standard limits using single-signature mode.
 
 ## Invariant 5: Liability assignment follows mandate-scope-v1
 
