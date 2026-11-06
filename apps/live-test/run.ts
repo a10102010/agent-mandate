@@ -51,6 +51,7 @@ interface CliArgs {
   principal: string;
   agent: string;
   merchant: string;
+  dryRun: boolean;
 }
 
 function parseArgs(): CliArgs {
@@ -66,10 +67,13 @@ function parseArgs(): CliArgs {
 
   return {
     cluster: (parsed.cluster as "devnet" | "mainnet") || "devnet",
-    mint: parsed.mint || "ECoy3RJja5kkpDpA7Ue6mLzVsAovxhWKP5AiBW5fKh9g",
+    mint: parsed.mint || (parsed.cluster === "mainnet"
+      ? "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  // USDC mainnet
+      : "ECoy3RJja5kkpDpA7Ue6mLzVsAovxhWKP5AiBW5fKh9g"), // tUSDC devnet
     principal: parsed.principal || path.join(defaultDir, "principal.json"),
     agent: parsed.agent || path.join(defaultDir, "agent.json"),
     merchant: parsed.merchant || path.join(defaultDir, "merchant.json"),
+    dryRun: "dry-run" in parsed || "dryRun" in parsed,
   };
 }
 
@@ -425,6 +429,24 @@ async function main() {
   // ════════════════════════════════════════════════════════════════
   //  STEP B: create_mandate on-chain + fund escrow
   // ════════════════════════════════════════════════════════════════
+
+  if (args.dryRun) {
+    logStep("DRY-RUN", "Stopping before first on-chain transaction");
+    logInfo(`Cluster: ${args.cluster}`);
+    logInfo(`Program: ${PROGRAM_ID.toBase58()}`);
+    logInfo(`Mint: ${args.mint}`);
+    logInfo(`Principal: ${principalKp.publicKey.toBase58()}`);
+    logInfo(`Agent: ${agentKp.publicKey.toBase58()}`);
+    logInfo(`Merchant: ${merchantKp.publicKey.toBase58()}`);
+    logInfo(`Mandate PDA: ${mandatePda.toBase58()}`);
+    const principalBal = await connection.getBalance(principalKp.publicKey);
+    const agentBal = await connection.getBalance(agentKp.publicKey);
+    logInfo(`Principal SOL: ${principalBal / 1e9}`);
+    logInfo(`Agent SOL: ${agentBal / 1e9}`);
+    logInfo("Mandate JSON saved. No transactions sent.");
+    console.log("\n  DRY-RUN COMPLETE — fund the wallets and re-run without --dry-run\n");
+    process.exit(0);
+  }
 
   logStep("B", "create_mandate on-chain + fund escrow with 10 tUSDC");
 
